@@ -29,10 +29,42 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
   background:rgba(13,27,62,.97);
   backdrop-filter:blur(20px);
   border-bottom:1px solid rgba(255,255,255,.06);
-  padding:0 20px;height:64px;
+  padding:0 16px;height:64px;
   display:flex;align-items:center;justify-content:space-between;
-  gap:10px;
+  gap:8px;
 }
+/* LANG DROPDOWN */
+.lang-dropdown-wrap{position:relative;}
+.lang-globe-btn{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  color:white;border-radius:20px;padding:6px 12px;
+  font-family:"Tajawal",sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.lang-globe-btn:hover{background:rgba(232,80,106,.2);border-color:var(--pink);}
+.lang-globe-btn .lang-flag{font-size:16px;}
+.lang-dropdown{
+  position:absolute;top:calc(100% + 8px);left:0;
+  background:var(--navy2);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:8px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;
+  min-width:260px;box-shadow:0 12px 40px rgba(0,0,0,.5);
+  z-index:999;
+  animation:fadeIn .15s;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.lang-dropdown.hidden{display:none;}
+.ld-btn{
+  display:flex;align-items:center;gap:7px;
+  padding:9px 12px;border-radius:9px;
+  color:var(--g300);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all .15s;border:none;background:none;
+  font-family:"Tajawal",sans-serif;white-space:nowrap;
+}
+.ld-btn:hover{background:rgba(255,255,255,.08);color:white;}
+.ld-btn.on{background:linear-gradient(135deg,rgba(232,80,106,.2),rgba(245,134,62,.15));color:white;font-weight:700;}
+.ld-btn .lf{font-size:18px;flex-shrink:0;}
 .nav-logo{display:flex;align-items:center;gap:9px;cursor:pointer;text-decoration:none;flex-shrink:0;}
 .nav-logo img{height:40px;width:40px;object-fit:contain;border-radius:50%;}
 .nav-logo-text{font-size:20px;font-weight:800;color:white;font-family:"Sora",sans-serif;letter-spacing:-.5px;}
@@ -323,7 +355,7 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
 .partners-sec{background:var(--navy);padding:28px 20px;text-align:center;}
 .pchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px;}
 .pc{padding:6px 14px;border:1px solid rgba(255,255,255,.12);border-radius:18px;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);}
-footer{background:#070d1c;color:var(--g500);padding:36px 20px 100px;}
+footer{background:#070d1c;color:var(--g500);padding:36px 20px 48px;}
 /* 100px bottom padding for lang bar */
 .footer-inner{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;gap:28px;align-items:start;justify-content:space-between;}
 .footer-logo{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
@@ -340,7 +372,7 @@ footer{background:#070d1c;color:var(--g500);padding:36px 20px 100px;}
 ============================================= */
 .overlay{position:fixed;inset:0;background:rgba(13,27,62,.75);backdrop-filter:blur(5px);z-index:300;display:flex;align-items:flex-end;justify-content:center;animation:fi .2s;}
 @keyframes fi{from{opacity:0}to{opacity:1}}
-.modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:24px;animation:su .3s cubic-bezier(.22,.68,0,1.2);margin-bottom:60px;}
+.modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:24px;animation:su .3s cubic-bezier(.22,.68,0,1.2);}
 /* margin-bottom for lang bar */
 @keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
@@ -359,7 +391,7 @@ footer{background:#070d1c;color:var(--g500);padding:36px 20px 100px;}
 /* =============================================
    TOAST
 ============================================= */
-#tw{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
+#tw{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none;}
 .toast{background:var(--navy);color:white;padding:10px 16px;border-radius:var(--rs);font-size:14px;box-shadow:var(--shl);display:flex;align-items:center;gap:8px;animation:su .3s;min-width:240px;}
 .toast.ok{border-right:4px solid var(--green);}
 .toast.err{border-right:4px solid var(--pink);}
@@ -424,8 +456,15 @@ footer{background:#070d1c;color:var(--g500);padding:36px 20px 100px;}
     <a href="client.html" class="nl" id="clientLink" style="display:none" data-t="nav_client">حسابي</a>
   </div>
   <div class="nav-end">
-    <!-- Lang switcher desktop -->
-    <div class="nav-langs" id="navLangs"></div>
+    <!-- Language Switcher -->
+    <div class="lang-dropdown-wrap" id="langWrap">
+      <button class="lang-globe-btn" onclick="toggleLangDropdown()" id="langGlobeBtn">
+        <span class="lang-flag" id="currentFlag">🌍</span>
+        <span id="currentLangLabel">عر</span>
+        <span style="font-size:10px;opacity:.6">▾</span>
+      </button>
+      <div class="lang-dropdown hidden" id="langDropdown"></div>
+    </div>
     <div id="authBtns" style="display:flex;gap:7px">
       <button class="btn btn-ghost btn-sm" onclick="openAuth('login')" data-t="nav_login">دخول</button>
       <button class="btn btn-p btn-sm" onclick="openAuth('signup')" data-t="nav_signup">سجّل مجاناً</button>
@@ -631,8 +670,7 @@ footer{background:#070d1c;color:var(--g500);padding:36px 20px 100px;}
   <div class="footer-copy">© 2026 LanCul — <span data-t="footer_rights">جميع الحقوق محفوظة</span></div>
 </footer>
 
-<!-- LANGUAGE BAR (always visible bottom) -->
-<div class="lang-panel" id="langPanel"></div>
+<!-- lang panel removed - now in navbar -->
 
 <div id="tw"></div>
 
@@ -650,28 +688,51 @@ const SVC={
 let _cf="",_lf="",_sf="";
 
 /* =============================================
-   LANGUAGE SYSTEM
+   LANGUAGE SYSTEM — 11 Languages
 ============================================= */
-// 11 languages config
 const LANGS=[
-  {c:"ar",n:"عر",label:"العربية",dir:"rtl"},
-  {c:"en",n:"EN",label:"English",dir:"ltr"},
-  {c:"es",n:"ES",label:"Español",dir:"ltr"},
-  {c:"fr",n:"FR",label:"Français",dir:"ltr"},
-  {c:"it",n:"IT",label:"Italiano",dir:"ltr"},
-  {c:"pt",n:"PT",label:"Português",dir:"ltr"},
-  {c:"zh",n:"中",label:"中文",dir:"ltr"},
-  {c:"ja",n:"日",label:"日本語",dir:"ltr"},
-  {c:"ko",n:"한",label:"한국어",dir:"ltr"},
-  {c:"de",n:"DE",label:"Deutsch",dir:"ltr"},
-  {c:"ru",n:"РУ",label:"Русский",dir:"ltr"}
+  {c:"ar", n:"عر", label:"العربية",    flag:"🇸🇦", dir:"rtl"},
+  {c:"en", n:"EN", label:"English",    flag:"🇬🇧", dir:"ltr"},
+  {c:"es", n:"ES", label:"Español",    flag:"🇪🇸", dir:"ltr"},
+  {c:"fr", n:"FR", label:"Français",   flag:"🇫🇷", dir:"ltr"},
+  {c:"it", n:"IT", label:"Italiano",   flag:"🇮🇹", dir:"ltr"},
+  {c:"pt", n:"PT", label:"Português",  flag:"🇧🇷", dir:"ltr"},
+  {c:"zh", n:"中文", label:"中文",     flag:"🇨🇳", dir:"ltr"},
+  {c:"ja", n:"日本語", label:"日本語", flag:"🇯🇵", dir:"ltr"},
+  {c:"ko", n:"한국어", label:"한국어", flag:"🇰🇷", dir:"ltr"},
+  {c:"de", n:"DE", label:"Deutsch",    flag:"🇩🇪", dir:"ltr"},
+  {c:"ru", n:"РУ", label:"Русский",   flag:"🇷🇺", dir:"ltr"},
 ];
 
-function buildLangBars(){
+function buildLangDropdown(){
   const cur=currentLang;
-  const btns=LANGS.map(l=>`<button class="lb ${cur===l.c?"on":""}" onclick="switchLang('${l.c}')" title="${l.label}">${l.n}</button>`).join("");
-  document.getElementById("langPanel").innerHTML=btns;
-  document.getElementById("navLangs").innerHTML=btns;
+  const curLang=LANGS.find(l=>l.c===cur)||LANGS[0];
+  // Update globe button
+  document.getElementById("currentFlag").textContent=curLang.flag;
+  document.getElementById("currentLangLabel").textContent=curLang.n;
+  // Build dropdown items
+  document.getElementById("langDropdown").innerHTML=LANGS.map(l=>`
+    <button class="ld-btn ${cur===l.c?"on":""}" onclick="switchLang('${l.c}')">
+      <span class="lf">${l.flag}</span>
+      <span>${l.label}</span>
+    </button>`).join("");
+}
+
+function toggleLangDropdown(){
+  const dd=document.getElementById("langDropdown");
+  dd.classList.toggle("hidden");
+  // Close on outside click
+  if(!dd.classList.contains("hidden")){
+    setTimeout(()=>{
+      document.addEventListener("click",closeLangDD,{once:true});
+    },0);
+  }
+}
+function closeLangDD(e){
+  const wrap=document.getElementById("langWrap");
+  if(!wrap?.contains(e.target)){
+    document.getElementById("langDropdown")?.classList.add("hidden");
+  }
 }
 
 function switchLang(lc){
@@ -679,8 +740,11 @@ function switchLang(lc){
   if(!lang)return;
   setLang(lc);
   document.documentElement.dir=lang.dir;
+  document.documentElement.lang=lc;
   document.body.style.fontFamily=lang.dir==="rtl"?"'Tajawal',sans-serif":"'Sora',sans-serif";
-  buildLangBars();
+  // Close dropdown
+  document.getElementById("langDropdown")?.classList.add("hidden");
+  buildLangDropdown();
   renderRFQTypes();
   renderRFQCards();
 }
@@ -906,10 +970,10 @@ renderExperiences();
 renderMkt();
 renderRFQTypes();
 renderRFQCards();
-buildLangBars();
+buildLangDropdown();
 initNav();
 
-document.addEventListener("langchange",()=>{renderRFQTypes();renderRFQCards();buildLangBars();});
+document.addEventListener("langchange",()=>{renderRFQTypes();renderRFQCards();buildLangDropdown();});
 </script>
 </body>
 </html>
