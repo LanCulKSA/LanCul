@@ -2,7 +2,57 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>LanCul — المرشدون</title>
+
+  <!-- ═══ SEO ═══ -->
+  <meta name="description" content="ابحث عن أفضل المرشدين السياحيين والمترجمين السعوديين. فلترة حسب المدينة واللغة والتخصص. أسعار شفافة مع 4 خيارات.">
+  <meta name="description" xml:lang="en" content="Search Saudi tour guides and translators. Filter by city, language, specialization. Transparent pricing with 4 options.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="googlebot" content="index, follow">
+  <link rel="canonical" href="https://lanculksa.github.io/LanCul/providers.html">
+  <link rel="icon" type="image/png" href="lancul-logo.png">
+  <link rel="apple-touch-icon" href="lancul-logo.png">
+  
+  <link rel="alternate" hreflang="ar" href="https://lanculksa.github.io/LanCul/providers.html?lang=ar">
+  <link rel="alternate" hreflang="en" href="https://lanculksa.github.io/LanCul/providers.html?lang=en">
+  <link rel="alternate" hreflang="ja" href="https://lanculksa.github.io/LanCul/providers.html?lang=ja">
+  <link rel="alternate" hreflang="zh-Hans" href="https://lanculksa.github.io/LanCul/providers.html?lang=zh">
+  <link rel="alternate" hreflang="fr" href="https://lanculksa.github.io/LanCul/providers.html?lang=fr">
+  <link rel="alternate" hreflang="de" href="https://lanculksa.github.io/LanCul/providers.html?lang=de">
+  <link rel="alternate" hreflang="es" href="https://lanculksa.github.io/LanCul/providers.html?lang=es">
+  <link rel="alternate" hreflang="ko" href="https://lanculksa.github.io/LanCul/providers.html?lang=ko">
+  <link rel="alternate" hreflang="ru" href="https://lanculksa.github.io/LanCul/providers.html?lang=ru">
+  <link rel="alternate" hreflang="pt" href="https://lanculksa.github.io/LanCul/providers.html?lang=pt">
+  <link rel="alternate" hreflang="it" href="https://lanculksa.github.io/LanCul/providers.html?lang=it">
+  <link rel="alternate" hreflang="x-default" href="https://lanculksa.github.io/LanCul/providers.html">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://lanculksa.github.io/LanCul/providers.html">
+  <meta property="og:title" content="المرشدون والمترجمون السعوديون | LanCul لانكول">
+  <meta property="og:description" content="ابحث عن أفضل المرشدين السياحيين والمترجمين السعوديين. فلترة حسب المدينة واللغة والتخصص. أسعار شفافة مع 4 خيارات.">
+  <meta property="og:image" content="https://lanculksa.github.io/LanCul/lancul-logo.png">
+  <meta property="og:locale" content="ar_SA">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:locale:alternate" content="ja_JP">
+  <meta property="og:site_name" content="LanCul — لانكول">
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@lancul_app">
+  <meta name="twitter:title" content="المرشدون والمترجمون السعوديون | LanCul لانكول">
+  <meta name="twitter:description" content="ابحث عن أفضل المرشدين السياحيين والمترجمين السعوديين. فلترة حسب المدينة واللغة والتخصص. أسعار شفافة مع 4 خيارات.">
+  <meta name="twitter:image" content="https://lanculksa.github.io/LanCul/lancul-logo.png">
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "قائمة المرشدين السياحيين السعوديين",
+    "description": "أفضل المرشدين والمترجمين السعوديين بأكثر من 20 لغة",
+    "url": "https://lanculksa.github.io/LanCul/providers.html",
+    "numberOfItems": "1000",
+    "itemListOrder": "https://schema.org/ItemListOrderDescending"
+  }
+  </script>
+<title>المرشدون والمترجمون السعوديون | LanCul لانكول</title>
 <link rel="stylesheet" href="shared.css">
 <style>
 .page-hero{background:linear-gradient(140deg,var(--navy),#1a2f5e);padding:40px 14px 32px;position:relative;overflow:hidden;}
@@ -283,15 +333,30 @@ function switchLang(lc){
   for(var i=0;i<LANGS_CFG.length;i++){ if(LANGS_CFG[i].c===lc){ lang=LANGS_CFG[i]; break; }}
   if(!lang) return;
   localStorage.setItem("lancul_lang",lc);
+  // Apply via shared.js setLang (handles data-t translation)
   if(typeof setLang==="function") setLang(lc);
+  // Apply direction + font
   document.documentElement.dir=lang.dir;
   document.documentElement.lang=lc;
-  if(lang.dir==="ltr") document.body.classList.add("ltr");
-  else document.body.classList.remove("ltr");
+  if(lang.dir==="ltr"){
+    document.body.classList.add("ltr");
+    document.body.style.fontFamily="'Sora',sans-serif";
+  } else {
+    document.body.classList.remove("ltr");
+    document.body.style.fontFamily="'Tajawal',sans-serif";
+  }
+  // Close dropdown + rebuild label
   var dd=document.getElementById("langDD"); if(dd) dd.classList.add("hidden");
   buildLangDD();
+  // Re-render all dynamic content
+  if(typeof renderProviders==="function") renderProviders();
+  if(typeof renderExp==="function") renderExp();
+  if(typeof renderMkt==="function") renderMkt();
   if(typeof renderRFQTypes==="function") renderRFQTypes();
   if(typeof renderRFQCards==="function") renderRFQCards();
+  if(typeof applyFilters==="function") applyFilters();
+  if(typeof renderBks==="function") renderBks();
+  if(typeof renderRFQs==="function") renderRFQs();
 }
 
 function toggleDrawer(){document.getElementById("navDrawer")?.classList.toggle("open");}

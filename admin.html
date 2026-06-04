@@ -375,7 +375,7 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
     <div class="card-head"><span class="card-title">⚙️ إعدادات المنصة</span></div>
     <div class="card-body">
       <div class="fg"><label>حد ساعات اليوم الكامل</label><input class="fi" type="number" value="4" id="fdThresh"><div class="fhint">الحجوزات فوق هذا الرقم = يوم كامل تلقائياً</div></div>
-      <div class="fg"><label>بريد الإشعارات</label><input class="fi" type="email" value="hello@lancul.net" style="direction:ltr"></div>
+      <div class="fg"><label>بريد الإشعارات</label><input class="fi" type="email" value="info@lancul.net" style="direction:ltr"></div>
       <button class="btn btn-p btn-full" onclick="toast('تم الحفظ ✅')">حفظ الإعدادات</button>
     </div>
   </div>
@@ -1138,15 +1138,30 @@ function switchLang(lc){
   for(var i=0;i<LANGS_CFG.length;i++){ if(LANGS_CFG[i].c===lc){ lang=LANGS_CFG[i]; break; }}
   if(!lang) return;
   localStorage.setItem("lancul_lang",lc);
+  // Apply via shared.js setLang (handles data-t translation)
   if(typeof setLang==="function") setLang(lc);
+  // Apply direction + font
   document.documentElement.dir=lang.dir;
   document.documentElement.lang=lc;
-  if(lang.dir==="ltr") document.body.classList.add("ltr");
-  else document.body.classList.remove("ltr");
+  if(lang.dir==="ltr"){
+    document.body.classList.add("ltr");
+    document.body.style.fontFamily="'Sora',sans-serif";
+  } else {
+    document.body.classList.remove("ltr");
+    document.body.style.fontFamily="'Tajawal',sans-serif";
+  }
+  // Close dropdown + rebuild label
   var dd=document.getElementById("langDD"); if(dd) dd.classList.add("hidden");
   buildLangDD();
+  // Re-render all dynamic content
+  if(typeof renderProviders==="function") renderProviders();
+  if(typeof renderExp==="function") renderExp();
+  if(typeof renderMkt==="function") renderMkt();
   if(typeof renderRFQTypes==="function") renderRFQTypes();
   if(typeof renderRFQCards==="function") renderRFQCards();
+  if(typeof applyFilters==="function") applyFilters();
+  if(typeof renderBks==="function") renderBks();
+  if(typeof renderRFQs==="function") renderRFQs();
 }
 
 document.addEventListener("DOMContentLoaded",function(){buildLangDD();});
