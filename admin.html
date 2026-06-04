@@ -441,6 +441,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
 });
 </script>
+<script src="supabase.js"></script>
 <script src="shared.js"></script>
 <script>
 // ─── INIT after shared.js loaded ──
@@ -475,9 +476,24 @@ function gTab(name,el){
 }
 
 // ─── LOAD ALL ─────────────────────────────────
-function loadAll(){
-  const bks = getBookings();
-  const rfqs = getRFQs();
+async function loadAll(){
+  let bks, rfqs, apps, summary;
+  if(window.supaAPI && window._supa){
+    try {
+      [bks, rfqs, apps, summary] = await Promise.all([
+        supaAPI.fetchAllBookings(),
+        supaAPI.fetchRFQs(),
+        supaAPI.fetchProviderApplications(),
+        supaAPI.fetchAdminSummary(),
+      ]);
+    } catch(e) {
+      bks=getBookings(); rfqs=getRFQs();
+      apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
+    }
+  } else {
+    bks=getBookings(); rfqs=getRFQs();
+    apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
+  }
   const apps = JSON.parse(localStorage.getItem("lancul_applications")||"[]");
   const commPct = parseFloat(localStorage.getItem("lc_comm_pct")||"15");
   const rev = bks.reduce((s,b)=>s+(b.total||0),0);
@@ -604,7 +620,7 @@ function viewCode(bkId){
   document.body.appendChild(o);o.addEventListener("click",e=>{if(e.target===o)closeModal();});
 }
 
-function confirmBk(bkId){
+async function confirmBk(bkId){
   const all = getBookings();
   const bk = all.find(b=>b.id===bkId);
   if(!bk) return;
@@ -797,15 +813,23 @@ function viewProvider(pid){
   document.body.appendChild(o);o.addEventListener("click",e=>{if(e.target===o)closeModal();});
 }
 
-function approveApp(id){
-  const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
-  const i=apps.findIndex(a=>a.id===id);
-  if(i>-1){apps[i].status="approved";localStorage.setItem("lancul_applications",JSON.stringify(apps));}
+async function approveApp(id){
+  if(window.supaAPI && window._supa){
+    try { await supaAPI.approveProvider(id); } catch(e){}
+  } else {
+    const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
+    const i=apps.findIndex(a=>a.id===id);
+    if(i>-1){apps[i].status="approved";localStorage.setItem("lancul_applications",JSON.stringify(apps));}
+  }
   toast("تم القبول ✅");renderProviders();loadAll();
 }
-function rejectApp(id){
-  const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]").filter(a=>a.id!==id);
-  localStorage.setItem("lancul_applications",JSON.stringify(apps));
+async function rejectApp(id){
+  if(window.supaAPI && window._supa){
+    try { await supaAPI.rejectProvider(id); } catch(e){}
+  } else {
+    const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]").filter(a=>a.id!==id);
+    localStorage.setItem("lancul_applications",JSON.stringify(apps));
+  }
   toast("تم الرفض");renderProviders();loadAll();
 }
 function openAddProvider(){
@@ -1002,6 +1026,54 @@ function toast(msg,type="ok"){
   w.appendChild(el);setTimeout(()=>el.remove(),3000);
 }
 function closeModal(){document.querySelectorAll(".overlay").forEach(o=>o.remove());}
+</script>
+
+<script>
+// ── Supabase Auth Override ────────────────────────
+async function doAuth(mode) {
+  const email = document.getElementById("aEmail")?.value?.trim();
+  const pass  = document.getElementById("aPass")?.value;
+  if (!email || !pass) { toast("يرجى تعبئة جميع الحقول", "err"); return; }
+  try {
+    const btn = document.querySelector(".overlay .btn-p");
+    if (btn) { btn.textContent = "جاري..."; btn.disabled = true; }
+    if (mode === "signup") {
+      const name = document.getElementById("aName")?.value || email.split("@")[0];
+      await supaAPI.signUp(email, pass, name, "client");
+      toast("✅ تم إنشاء حسابك! تحقق من بريدك الإلكتروني");
+    } else {
+      await supaAPI.signIn(email, pass);
+      toast("مرحباً! 🎉");
+    }
+    closeModal();
+    setTimeout(async () => {
+      const u = await supaAPI.getUser();
+      if (u) { setUser({ name: u.name, email: u.email, role: u.role }); initNav?.(); }
+      if (typeof initDash === "function") initDash();
+      else location.reload();
+    }, 600);
+  } catch (err) {
+    toast(err.message === "Invalid login credentials" ? "بريد أو كلمة مرور خاطئة" : (err.message || "حدث خطأ"), "err");
+    const btn = document.querySelector(".overlay .btn-p");
+    if (btn) { btn.textContent = mode === "login" ? "دخول" : "إنشاء الحساب"; btn.disabled = false; }
+  }
+}
+async function doLogout() {
+  await supaAPI.signOut();
+  logout();
+  toast("تم تسجيل الخروج");
+  setTimeout(() => { window.location.href = "index.html"; }, 500);
+}
+// Load user from Supabase on page load
+window.addEventListener("supabase_ready", async () => {
+  const u = await supaAPI.getUser();
+  if (u) {
+    setUser({ name: u.name, email: u.email, role: u.role, supaId: u.supaId });
+  }
+  initNav?.();
+  if (typeof initDash === "function") initDash();
+  if (typeof loadAll === "function") loadAll();
+});
 </script>
 </body>
 </html>

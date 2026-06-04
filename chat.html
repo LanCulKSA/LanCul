@@ -282,6 +282,7 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
 </div>
 
 <div id="tw"></div>
+<script src="supabase.js"></script>
 <script src="shared.js"></script>
 <script>
 // ═══════════════════════════════════════
@@ -698,6 +699,54 @@ window.confirmBooking_new = function(pid){
 // START
 // ═══════════════════════════════════════
 document.addEventListener("DOMContentLoaded", init);
+</script>
+
+<script>
+// ── Supabase Auth Override ────────────────────────
+async function doAuth(mode) {
+  const email = document.getElementById("aEmail")?.value?.trim();
+  const pass  = document.getElementById("aPass")?.value;
+  if (!email || !pass) { toast("يرجى تعبئة جميع الحقول", "err"); return; }
+  try {
+    const btn = document.querySelector(".overlay .btn-p");
+    if (btn) { btn.textContent = "جاري..."; btn.disabled = true; }
+    if (mode === "signup") {
+      const name = document.getElementById("aName")?.value || email.split("@")[0];
+      await supaAPI.signUp(email, pass, name, "client");
+      toast("✅ تم إنشاء حسابك! تحقق من بريدك الإلكتروني");
+    } else {
+      await supaAPI.signIn(email, pass);
+      toast("مرحباً! 🎉");
+    }
+    closeModal();
+    setTimeout(async () => {
+      const u = await supaAPI.getUser();
+      if (u) { setUser({ name: u.name, email: u.email, role: u.role }); initNav?.(); }
+      if (typeof initDash === "function") initDash();
+      else location.reload();
+    }, 600);
+  } catch (err) {
+    toast(err.message === "Invalid login credentials" ? "بريد أو كلمة مرور خاطئة" : (err.message || "حدث خطأ"), "err");
+    const btn = document.querySelector(".overlay .btn-p");
+    if (btn) { btn.textContent = mode === "login" ? "دخول" : "إنشاء الحساب"; btn.disabled = false; }
+  }
+}
+async function doLogout() {
+  await supaAPI.signOut();
+  logout();
+  toast("تم تسجيل الخروج");
+  setTimeout(() => { window.location.href = "index.html"; }, 500);
+}
+// Load user from Supabase on page load
+window.addEventListener("supabase_ready", async () => {
+  const u = await supaAPI.getUser();
+  if (u) {
+    setUser({ name: u.name, email: u.email, role: u.role, supaId: u.supaId });
+  }
+  initNav?.();
+  if (typeof initDash === "function") initDash();
+  if (typeof loadAll === "function") loadAll();
+});
 </script>
 </body>
 </html>

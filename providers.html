@@ -219,6 +219,7 @@ footer img{height:36px;width:36px;border-radius:50%;object-fit:contain;margin-bo
   <p style="font-size:11px;margin-top:6px">© 2026 LanCul</p>
 </footer>
 <div id="tw"></div>
+<script src="supabase.js"></script>
 <script src="shared.js"></script>
 <script>
 
@@ -398,7 +399,74 @@ function submitReg(){
   toast("تم إرسال طلبك ✅ سيتواصل معك فريقنا خلال 24–48 ساعة");_step=1;showStep(1);
 }
 applyFilters();buildLangDD();initNav();
+
+// Load providers from Supabase if available
+async function loadProvidersFromSupa() {
+  if (!window.supaAPI || !window._supa) return;
+  try {
+    const data = await supaAPI.fetchProviders();
+    if (data.length > 0) {
+      // Merge with PROVIDERS array
+      data.forEach(sp => {
+        const idx = PROVIDERS.findIndex(p => p.id === sp.id);
+        if (idx > -1) PROVIDERS[idx] = sp;
+        else PROVIDERS.push(sp);
+      });
+      applyFilters();
+    }
+  } catch(e) { console.log("Using mock providers"); }
+}
+window.addEventListener("supabase_ready", loadProvidersFromSupa);
+
 if(location.hash==="#register")setTimeout(()=>document.getElementById("register").scrollIntoView({behavior:"smooth"}),400);
+</script>
+
+<script>
+// ── Supabase Auth Override ────────────────────────
+async function doAuth(mode) {
+  const email = document.getElementById("aEmail")?.value?.trim();
+  const pass  = document.getElementById("aPass")?.value;
+  if (!email || !pass) { toast("يرجى تعبئة جميع الحقول", "err"); return; }
+  try {
+    const btn = document.querySelector(".overlay .btn-p");
+    if (btn) { btn.textContent = "جاري..."; btn.disabled = true; }
+    if (mode === "signup") {
+      const name = document.getElementById("aName")?.value || email.split("@")[0];
+      await supaAPI.signUp(email, pass, name, "client");
+      toast("✅ تم إنشاء حسابك! تحقق من بريدك الإلكتروني");
+    } else {
+      await supaAPI.signIn(email, pass);
+      toast("مرحباً! 🎉");
+    }
+    closeModal();
+    setTimeout(async () => {
+      const u = await supaAPI.getUser();
+      if (u) { setUser({ name: u.name, email: u.email, role: u.role }); initNav?.(); }
+      if (typeof initDash === "function") initDash();
+      else location.reload();
+    }, 600);
+  } catch (err) {
+    toast(err.message === "Invalid login credentials" ? "بريد أو كلمة مرور خاطئة" : (err.message || "حدث خطأ"), "err");
+    const btn = document.querySelector(".overlay .btn-p");
+    if (btn) { btn.textContent = mode === "login" ? "دخول" : "إنشاء الحساب"; btn.disabled = false; }
+  }
+}
+async function doLogout() {
+  await supaAPI.signOut();
+  logout();
+  toast("تم تسجيل الخروج");
+  setTimeout(() => { window.location.href = "index.html"; }, 500);
+}
+// Load user from Supabase on page load
+window.addEventListener("supabase_ready", async () => {
+  const u = await supaAPI.getUser();
+  if (u) {
+    setUser({ name: u.name, email: u.email, role: u.role, supaId: u.supaId });
+  }
+  initNav?.();
+  if (typeof initDash === "function") initDash();
+  if (typeof loadAll === "function") loadAll();
+});
 </script>
 </body>
 </html>
