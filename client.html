@@ -186,7 +186,8 @@ footer img{height:34px;width:34px;border-radius:50%;object-fit:contain;margin-bo
 <script src="shared.js"></script>
 <script>
 
-const LANGS_CFG=[
+
+var LANGS_CFG=[
   {c:"ar",n:"عر",label:"العربية",flag:"🇸🇦",dir:"rtl"},
   {c:"en",n:"EN",label:"English",flag:"🇬🇧",dir:"ltr"},
   {c:"es",n:"ES",label:"Español",flag:"🇪🇸",dir:"ltr"},
@@ -197,27 +198,65 @@ const LANGS_CFG=[
   {c:"ja",n:"日",label:"日本語",flag:"🇯🇵",dir:"ltr"},
   {c:"ko",n:"한",label:"한국어",flag:"🇰🇷",dir:"ltr"},
   {c:"de",n:"DE",label:"Deutsch",flag:"🇩🇪",dir:"ltr"},
-  {c:"ru",n:"РУ",label:"Русский",flag:"🇷🇺",dir:"ltr"},
+  {c:"ru",n:"РУ",label:"Русский",flag:"🇷🇺",dir:"ltr"}
 ];
+
 function buildLangDD(){
-  const cur=currentLang,cl=LANGS_CFG.find(l=>l.c===cur)||LANGS_CFG[0];
-  const f=document.getElementById("curFlag"),n=document.getElementById("curLangN");
-  if(f)f.textContent=cl.flag; if(n)n.textContent=cl.n;
-  const dd=document.getElementById("langDD");
-  if(dd)dd.innerHTML=LANGS_CFG.map(l=>`<button class="ldb ${cur===l.c?"on":""}" onclick="switchLang('${l.c}')">${l.flag} ${l.label}</button>`).join("");
+  var cur = localStorage.getItem("lancul_lang") || "ar";
+  if(typeof currentLang !== "undefined") cur = currentLang;
+  var cl = null;
+  for(var i=0;i<LANGS_CFG.length;i++){ if(LANGS_CFG[i].c===cur){ cl=LANGS_CFG[i]; break; }}
+  if(!cl) cl = LANGS_CFG[0];
+  var f=document.getElementById("curFlag"); if(f) f.textContent=cl.flag;
+  var n=document.getElementById("curLangN"); if(n) n.textContent=cl.n;
+  var dd=document.getElementById("langDD"); if(!dd) return;
+  var rows=[];
+  for(var j=0;j<LANGS_CFG.length;j++){
+    var L=LANGS_CFG[j];
+    var isOn=(L.c===cur);
+    rows.push('<button class="ldb'+(isOn?' on':'')+'" data-lang="'+L.c+'">'+L.flag+' '+L.label+'</button>');
+  }
+  dd.innerHTML=rows.join("");
+  var btns=dd.querySelectorAll("[data-lang]");
+  for(var k=0;k<btns.length;k++){
+    btns[k].addEventListener("click",function(){ switchLang(this.getAttribute("data-lang")); });
+  }
 }
+
 function toggleLangDD(){
-  const dd=document.getElementById("langDD"); if(!dd)return;
-  dd.classList.toggle("hidden");
-  if(!dd.classList.contains("hidden"))setTimeout(()=>document.addEventListener("click",closeLDD,{once:true}),0);
+  var dd=document.getElementById("langDD"); if(!dd) return;
+  if(dd.classList.contains("hidden")){
+    dd.classList.remove("hidden");
+    buildLangDD();
+    setTimeout(function(){ document.addEventListener("click",closeLDD,{once:true}); },10);
+  } else {
+    dd.classList.add("hidden");
+  }
 }
-function closeLDD(e){if(!document.getElementById("langWrap")?.contains(e.target))document.getElementById("langDD")?.classList.add("hidden");}
+
+function closeLDD(e){
+  var wrap=document.getElementById("langWrap");
+  if(!wrap || !wrap.contains(e.target)){
+    var dd=document.getElementById("langDD"); if(dd) dd.classList.add("hidden");
+  }
+}
+
 function switchLang(lc){
-  const l=LANGS_CFG.find(x=>x.c===lc); if(!l)return;
-  setLang(lc); document.documentElement.dir=l.dir; document.documentElement.lang=lc;
-  document.body.classList.toggle("ltr",l.dir==="ltr");
-  document.getElementById("langDD")?.classList.add("hidden"); buildLangDD();
+  var lang=null;
+  for(var i=0;i<LANGS_CFG.length;i++){ if(LANGS_CFG[i].c===lc){ lang=LANGS_CFG[i]; break; }}
+  if(!lang) return;
+  localStorage.setItem("lancul_lang",lc);
+  if(typeof setLang==="function") setLang(lc);
+  document.documentElement.dir=lang.dir;
+  document.documentElement.lang=lc;
+  if(lang.dir==="ltr") document.body.classList.add("ltr");
+  else document.body.classList.remove("ltr");
+  var dd=document.getElementById("langDD"); if(dd) dd.classList.add("hidden");
+  buildLangDD();
+  if(typeof renderRFQTypes==="function") renderRFQTypes();
+  if(typeof renderRFQCards==="function") renderRFQCards();
 }
+
 function toggleDrawer(){document.getElementById("navDrawer")?.classList.toggle("open");}
 function closeDrawer(){document.getElementById("navDrawer")?.classList.remove("open");}
 document.addEventListener("click",function(e){
