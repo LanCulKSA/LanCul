@@ -441,6 +441,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
 });
 </script>
+<script src="lang.js"></script>
 <script src="supabase.js"></script>
 <script src="shared.js"></script>
 <script>
@@ -478,13 +479,13 @@ function gTab(name,el){
 // ─── LOAD ALL ─────────────────────────────────
 async function loadAll(){
   let bks, rfqs, apps, summary;
-  if(window.supaAPI && window._supa){
+  if(window.db && window._sb){
     try {
       [bks, rfqs, apps, summary] = await Promise.all([
-        supaAPI.fetchAllBookings(),
-        supaAPI.fetchRFQs(),
-        supaAPI.fetchProviderApplications(),
-        supaAPI.fetchAdminSummary(),
+        window.db.fetchAllBookings(),
+        window.db.fetchRFQs(),
+        window.db.fetchPendingProviders(),
+        window.db.adminSummary(),
       ]);
     } catch(e) {
       bks=getBookings(); rfqs=getRFQs();
@@ -814,8 +815,8 @@ function viewProvider(pid){
 }
 
 async function approveApp(id){
-  if(window.supaAPI && window._supa){
-    try { await supaAPI.approveProvider(id); } catch(e){}
+  if(window.db && window._sb){
+    try { await window.db.approveProvider(id); } catch(e){}
   } else {
     const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
     const i=apps.findIndex(a=>a.id===id);
@@ -824,8 +825,8 @@ async function approveApp(id){
   toast("تم القبول ✅");renderProviders();loadAll();
 }
 async function rejectApp(id){
-  if(window.supaAPI && window._supa){
-    try { await supaAPI.rejectProvider(id); } catch(e){}
+  if(window.db && window._sb){
+    try { await window.db.rejectProvider(id); } catch(e){}
   } else {
     const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]").filter(a=>a.id!==id);
     localStorage.setItem("lancul_applications",JSON.stringify(apps));
@@ -1076,96 +1077,7 @@ window.addEventListener("supabase_ready", async () => {
 });
 </script>
 
-<script>
-// ── Language Switcher ─────────────────────────
 
-var LANGS_CFG=[
-  {c:"ar",n:"عر",label:"العربية",flag:"🇸🇦",dir:"rtl"},
-  {c:"en",n:"EN",label:"English",flag:"🇬🇧",dir:"ltr"},
-  {c:"es",n:"ES",label:"Español",flag:"🇪🇸",dir:"ltr"},
-  {c:"fr",n:"FR",label:"Français",flag:"🇫🇷",dir:"ltr"},
-  {c:"it",n:"IT",label:"Italiano",flag:"🇮🇹",dir:"ltr"},
-  {c:"pt",n:"PT",label:"Português",flag:"🇧🇷",dir:"ltr"},
-  {c:"zh",n:"中",label:"中文",flag:"🇨🇳",dir:"ltr"},
-  {c:"ja",n:"日",label:"日本語",flag:"🇯🇵",dir:"ltr"},
-  {c:"ko",n:"한",label:"한국어",flag:"🇰🇷",dir:"ltr"},
-  {c:"de",n:"DE",label:"Deutsch",flag:"🇩🇪",dir:"ltr"},
-  {c:"ru",n:"РУ",label:"Русский",flag:"🇷🇺",dir:"ltr"}
-];
-
-function buildLangDD(){
-  var cur = localStorage.getItem("lancul_lang") || "ar";
-  if(typeof currentLang !== "undefined") cur = currentLang;
-  var cl = null;
-  for(var i=0;i<LANGS_CFG.length;i++){ if(LANGS_CFG[i].c===cur){ cl=LANGS_CFG[i]; break; }}
-  if(!cl) cl = LANGS_CFG[0];
-  var f=document.getElementById("curFlag"); if(f) f.textContent=cl.flag;
-  var n=document.getElementById("curLangN"); if(n) n.textContent=cl.n;
-  var dd=document.getElementById("langDD"); if(!dd) return;
-  var rows=[];
-  for(var j=0;j<LANGS_CFG.length;j++){
-    var L=LANGS_CFG[j];
-    var isOn=(L.c===cur);
-    rows.push('<button class="ldb'+(isOn?' on':'')+'" data-lang="'+L.c+'">'+L.flag+' '+L.label+'</button>');
-  }
-  dd.innerHTML=rows.join("");
-  var btns=dd.querySelectorAll("[data-lang]");
-  for(var k=0;k<btns.length;k++){
-    btns[k].addEventListener("click",function(){ switchLang(this.getAttribute("data-lang")); });
-  }
-}
-
-function toggleLangDD(){
-  var dd=document.getElementById("langDD"); if(!dd) return;
-  if(dd.classList.contains("hidden")){
-    dd.classList.remove("hidden");
-    buildLangDD();
-    setTimeout(function(){ document.addEventListener("click",closeLDD,{once:true}); },10);
-  } else {
-    dd.classList.add("hidden");
-  }
-}
-
-function closeLDD(e){
-  var wrap=document.getElementById("langWrap");
-  if(!wrap || !wrap.contains(e.target)){
-    var dd=document.getElementById("langDD"); if(dd) dd.classList.add("hidden");
-  }
-}
-
-function switchLang(lc){
-  var lang=null;
-  for(var i=0;i<LANGS_CFG.length;i++){ if(LANGS_CFG[i].c===lc){ lang=LANGS_CFG[i]; break; }}
-  if(!lang) return;
-  localStorage.setItem("lancul_lang",lc);
-  // Apply via shared.js setLang (handles data-t translation)
-  if(typeof setLang==="function") setLang(lc);
-  // Apply direction + font
-  document.documentElement.dir=lang.dir;
-  document.documentElement.lang=lc;
-  if(lang.dir==="ltr"){
-    document.body.classList.add("ltr");
-    document.body.style.fontFamily="'Sora',sans-serif";
-  } else {
-    document.body.classList.remove("ltr");
-    document.body.style.fontFamily="'Tajawal',sans-serif";
-  }
-  // Close dropdown + rebuild label
-  var dd=document.getElementById("langDD"); if(dd) dd.classList.add("hidden");
-  buildLangDD();
-  // Re-render all dynamic content
-  if(typeof renderProviders==="function") renderProviders();
-  if(typeof renderExp==="function") renderExp();
-  if(typeof renderMkt==="function") renderMkt();
-  if(typeof renderRFQTypes==="function") renderRFQTypes();
-  if(typeof renderRFQCards==="function") renderRFQCards();
-  if(typeof applyFilters==="function") applyFilters();
-  if(typeof renderBks==="function") renderBks();
-  if(typeof renderRFQs==="function") renderRFQs();
-}
-
-document.addEventListener("DOMContentLoaded",function(){buildLangDD();});
-</script>
 
 </body>
 </html>
