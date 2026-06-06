@@ -489,19 +489,91 @@ body{font-family:'Tajawal',sans-serif;background:var(--g50);color:var(--navy);di
         <div id="t-settings" style="display:none">
           <h2 style="font-size:17px;font-weight:800;margin-bottom:18px">الإعدادات</h2>
           <div class="settings-card">
-            <h3>المعلومات الشخصية</h3>
+            <h3>الملف الشخصي</h3>
+
+            <!-- Profile Photo -->
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--g100)">
+              <div style="position:relative;flex-shrink:0">
+                <div id="profileAvatar" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--orange));display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:white;overflow:hidden;border:3px solid var(--g100)">
+                  <span id="avatarInitials">م</span>
+                  <img id="avatarImg" src="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%">
+                </div>
+                <label for="photoInput" style="position:absolute;bottom:-2px;left:-2px;width:26px;height:26px;background:var(--pink);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid white;font-size:12px" title="تغيير الصورة">📷</label>
+                <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoChange(this)">
+              </div>
+              <div>
+                <div style="font-weight:700;font-size:14px;margin-bottom:3px">صورتك الشخصية</div>
+                <div style="font-size:11px;color:var(--g500);line-height:1.6">تظهر للسياح في بطاقتك<br>JPG أو PNG — حجم أقصى 2MB</div>
+                <button onclick="document.getElementById('photoInput').click()" style="margin-top:6px;background:var(--g50);border:1px solid var(--g100);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Tajawal',sans-serif;color:var(--navy)">تغيير الصورة</button>
+              </div>
+            </div>
+
             <div class="frow">
-              <div class="fg"><label>الاسم</label><input class="fii" id="sName"></div>
+              <div class="fg"><label>الاسم بالعربي</label><input class="fii" id="sName"></div>
+              <div class="fg"><label>الاسم بالإنجليزي</label><input class="fii" id="sNameEn" style="direction:ltr;font-family:'Sora',sans-serif"></div>
+            </div>
+            <div class="frow">
               <div class="fg"><label>المدينة</label>
                 <select class="fss" id="sCity">
                   <option>الرياض</option><option>جدة</option>
-                  <option>مكة المكرمة</option><option>الدمام</option><option>أبها</option>
+                  <option>مكة المكرمة</option><option>المدينة المنورة</option>
+                  <option>الدمام</option><option>أبها</option><option>العُلا</option>
                 </select>
               </div>
+              <div class="fg"><label>الجوال</label><input class="fii" id="sPhone" placeholder="05xxxxxxxx"></div>
             </div>
-            <div class="fg"><label data-t="lbl_email2">البريد الإلكتروني</label><input class="fii" id="sEmail" style="direction:ltr"></div>
-            <div class="fg"><label>الجوال</label><input class="fii" id="sPhone"></div>
-            <div class="fg"><label>نبذة عنك</label><textarea class="fii" id="sBio" style="resize:vertical;min-height:70px"></textarea></div>
+            <div class="fg"><label>البريد الإلكتروني</label><input class="fii" id="sEmail" style="direction:ltr"></div>
+
+            <!-- Bio -->
+            <div class="fg">
+              <label>نبذة عنك بالعربي <span style="color:var(--g500);font-weight:400;font-size:10px">(يراها السائح)</span></label>
+              <textarea class="fii" id="sBio" style="resize:vertical;min-height:80px" maxlength="300" oninput="document.getElementById('bioCount2').textContent=this.value.length+' / 300'"></textarea>
+              <span style="font-size:10px;color:var(--g500)" id="bioCount2">0 / 300</span>
+            </div>
+            <div class="fg">
+              <label>نبذة بالإنجليزي <span style="color:var(--g500);font-weight:400;font-size:10px">(اختياري)</span></label>
+              <textarea class="fii" id="sBioEn" style="resize:vertical;min-height:80px;direction:ltr;font-family:'Sora',sans-serif;font-size:13px" maxlength="300"></textarea>
+            </div>
+
+            <!-- Specializations -->
+            <div class="fg">
+              <label>التخصصات / مجالات الخبرة</label>
+              <input class="fii" id="sSpecs" placeholder="أعمال، طب، تقنية، سياحة دينية، تراث... (مفصولة بفاصلة)">
+            </div>
+
+            <!-- Video intro -->
+            <div class="fg">
+              <label>رابط فيديو تعريفي <span style="color:var(--g500);font-weight:400;font-size:10px">(YouTube أو غيره — اختياري)</span></label>
+              <input class="fii" id="sVideoUrl" placeholder="https://youtube.com/..." style="direction:ltr">
+              <span style="font-size:10px;color:var(--g500)">فيديو قصير 30-60 ثانية تتكلم فيه بلغة العميل يرفع الحجوزات بشكل كبير 💡</span>
+            </div>
+          </div>
+
+          <!-- ══ PORTFOLIO CARD ══ -->
+          <div class="settings-card">
+            <h3>📸 معرض الأعمال</h3>
+            <p style="font-size:12px;color:var(--g500);margin-bottom:16px;line-height:1.7">
+              أضف صور من رحلاتك السابقة مع عملائك — تُظهر للسياح مستوى خدمتك وتبني الثقة قبل الحجز.
+              <br>حتى 8 صور · JPG أو PNG · حجم أقصى 3MB للصورة
+            </p>
+
+            <!-- Upload zone -->
+            <div id="portfolioUploadZone"
+              style="border:2px dashed var(--g300);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--g50);margin-bottom:14px"
+              onclick="document.getElementById('portfolioInput').click()"
+              ondragover="this.style.borderColor='var(--pink)';event.preventDefault()"
+              ondragleave="this.style.borderColor='var(--g300)'"
+              ondrop="handlePortfolioDrop(event)">
+              <input type="file" id="portfolioInput" accept="image/*" multiple style="display:none" onchange="handlePortfolioSelect(this)">
+              <div style="font-size:32px;margin-bottom:8px">🖼️</div>
+              <div style="font-weight:700;font-size:14px;color:var(--navy)">اسحب الصور هنا أو اضغط للرفع</div>
+              <div style="font-size:12px;color:var(--g500);margin-top:4px">يمكنك رفع أكثر من صورة دفعة واحدة</div>
+            </div>
+
+            <!-- Grid preview -->
+            <div id="portfolioGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px"></div>
+
+            <div id="portfolioCount" style="font-size:11px;color:var(--g500);margin-top:8px;text-align:left">0 / 8 صور</div>
           </div>
           <div class="settings-card">
             <h3>💰 الأسعار</h3>
@@ -664,15 +736,31 @@ function initDashboard() {
   if (unread > 0) document.getElementById('chatBadge').style.display = 'inline';
 
   // Settings prefill
-  document.getElementById('sName').value = _provider.name;
-  document.getElementById('sEmail').value = _provider.email;
+  document.getElementById('sName').value = _provider.name || '';
+  document.getElementById('sNameEn') && (document.getElementById('sNameEn').value = _provider.nameEn || '');
+  document.getElementById('sEmail').value = _provider.email || '';
+  document.getElementById('sPhone') && (document.getElementById('sPhone').value = _provider.phone || '');
   document.getElementById('sCity').value = _provider.city || 'الرياض';
+  document.getElementById('sBio') && (document.getElementById('sBio').value = _provider.bio || '');
+  document.getElementById('sBioEn') && (document.getElementById('sBioEn').value = _provider.bioEn || '');
+  document.getElementById('sSpecs') && (document.getElementById('sSpecs').value = _provider.specs || '');
+  document.getElementById('sVideoUrl') && (document.getElementById('sVideoUrl').value = _provider.videoUrl || '');
+  if(_provider.bio) document.getElementById('bioCount2') && (document.getElementById('bioCount2').textContent = _provider.bio.length + ' / 300');
+  // Show photo if exists
+  if (_provider.photoUrl) {
+    const img = document.getElementById('avatarImg');
+    const ini = document.getElementById('avatarInitials');
+    if(img){img.src=_provider.photoUrl;img.style.display='block';}
+    if(ini) ini.style.display='none';
+  }
+  updateAvatarDisplay();
 
   // Check active trip
   const active = bks.find(b => b.status === 'active');
   if (active) startTripTimer(active);
 
   renderOverview();
+  loadPortfolio();
   renderBookings();
   renderChat();
   renderEarnings();
@@ -935,24 +1023,61 @@ function renderEarnings() {
 }
 
 // ════ SETTINGS ══════════════════════════════════════════
-function saveSettings() {
-  _provider.name = document.getElementById('sName').value;
-  _provider.email = document.getElementById('sEmail').value;
-  _provider.city = document.getElementById('sCity').value;
-  sessionStorage.setItem('lancul_provider', JSON.stringify(_provider));
+// Photo handler
+function handlePhotoChange(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('حجم الصورة يتجاوز 2MB', 'err'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.getElementById('avatarImg');
+    const ini = document.getElementById('avatarInitials');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    ini.style.display = 'none';
+    // Save to provider
+    _provider.photoUrl = e.target.result;
+    sessionStorage.setItem('lancul_provider', JSON.stringify(_provider));
+    // Update sidebar avatar
+    updateAvatarDisplay();
+    toast('✅ تم رفع الصورة');
+  };
+  reader.readAsDataURL(file);
+}
 
-  // Update pricing in providers array (localStorage)
+function updateAvatarDisplay() {
+  const sbAv = document.getElementById('sbAv');
+  if (!sbAv) return;
+  if (_provider.photoUrl) {
+    sbAv.innerHTML = `<img src="${_provider.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  } else {
+    sbAv.textContent = _provider.name ? _provider.name.slice(0,2) : 'م';
+  }
+}
+
+function saveSettings() {
+  _provider.name    = document.getElementById('sName').value;
+  _provider.nameEn  = document.getElementById('sNameEn')?.value || '';
+  _provider.email   = document.getElementById('sEmail').value;
+  _provider.phone   = document.getElementById('sPhone')?.value || '';
+  _provider.city    = document.getElementById('sCity').value;
+  _provider.bio     = document.getElementById('sBio')?.value || '';
+  _provider.bioEn   = document.getElementById('sBioEn')?.value || '';
+  _provider.specs   = document.getElementById('sSpecs')?.value || '';
+  _provider.videoUrl= document.getElementById('sVideoUrl')?.value || '';
+
   const pricing = {
-    hourly_no_car:   parseInt(document.getElementById('pH_nc').value) || 120,
-    hourly_with_car: parseInt(document.getElementById('pH_c').value)  || 160,
-    fullday_no_car:  parseInt(document.getElementById('pFD_nc').value)|| 650,
-    fullday_with_car:parseInt(document.getElementById('pFD_c').value) || 800,
+    hourly_no_car:    parseInt(document.getElementById('pH_nc')?.value)  || 120,
+    hourly_with_car:  parseInt(document.getElementById('pH_c')?.value)   || 160,
+    fullday_no_car:   parseInt(document.getElementById('pFD_nc')?.value) || 650,
+    fullday_with_car: parseInt(document.getElementById('pFD_c')?.value)  || 800,
   };
   _provider.pricing = pricing;
 
-  document.getElementById('sbAv').textContent   = _provider.name.slice(0,2);
+  sessionStorage.setItem('lancul_provider', JSON.stringify(_provider));
+  updateAvatarDisplay();
   document.getElementById('sbName').textContent = _provider.name.split(' ').slice(0,2).join(' ');
-  toast('تم الحفظ ✅');
+  toast('✅ تم حفظ الملف الشخصي');
 }
 
 // ════ UTILS ═════════════════════════════════════════════
@@ -983,6 +1108,135 @@ document.addEventListener('DOMContentLoaded', () => {
     initDashboard();
   }
 });
+
+// ════ PORTFOLIO ══════════════════════════════════════════════════
+const MAX_PORTFOLIO = 8;
+let portfolioImages = []; // array of base64 strings
+
+function handlePortfolioSelect(input) {
+  const files = Array.from(input.files);
+  processPortfolioFiles(files);
+  input.value = ''; // reset so same file can be re-added
+}
+
+function handlePortfolioDrop(e) {
+  e.preventDefault();
+  document.getElementById('portfolioUploadZone').style.borderColor = 'var(--g300)';
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  processPortfolioFiles(files);
+}
+
+function processPortfolioFiles(files) {
+  const remaining = MAX_PORTFOLIO - portfolioImages.length;
+  if (remaining <= 0) { toast('وصلت للحد الأقصى 8 صور', 'err'); return; }
+  const toProcess = files.slice(0, remaining);
+  if (files.length > remaining) toast(`تم رفع ${remaining} صورة فقط (الحد الأقصى 8)`, 'err');
+
+  let processed = 0;
+  toProcess.forEach(file => {
+    if (file.size > 3 * 1024 * 1024) { toast(`${file.name} حجمه يتجاوز 3MB`, 'err'); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      portfolioImages.push({ src: e.target.result, caption: '' });
+      processed++;
+      if (processed === toProcess.length) renderPortfolioGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPortfolioGrid() {
+  const grid = document.getElementById('portfolioGrid');
+  const count = document.getElementById('portfolioCount');
+  if (!grid) return;
+
+  if (!portfolioImages.length) {
+    grid.innerHTML = '';
+    if (count) count.textContent = '0 / 8 صور';
+    return;
+  }
+
+  grid.innerHTML = portfolioImages.map((img, i) => `
+    <div style="position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--g100);cursor:pointer" onclick="openPortfolioView(${i})">
+      <img src="${img.src}" style="width:100%;height:100%;object-fit:cover" loading="lazy">
+      <button onclick="event.stopPropagation();removePortfolioImg(${i})"
+        style="position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:50%;background:rgba(231,76,60,.85);border:none;color:white;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">×</button>
+      <div style="position:absolute;bottom:0;inset-x:0;background:linear-gradient(transparent,rgba(0,0,0,.5));padding:4px 6px">
+        <div style="font-size:9px;color:white;opacity:.8">${i+1} / ${portfolioImages.length}</div>
+      </div>
+    </div>`).join('');
+
+  // Add "add more" tile if under limit
+  if (portfolioImages.length < MAX_PORTFOLIO) {
+    grid.innerHTML += `
+      <div onclick="document.getElementById('portfolioInput').click()"
+        style="border:2px dashed var(--g300);border-radius:8px;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--g50);transition:all .2s;color:var(--g500)"
+        onmouseenter="this.style.borderColor='var(--pink)';this.style.color='var(--pink)'"
+        onmouseleave="this.style.borderColor='var(--g300)';this.style.color='var(--g500)'">
+        <div style="font-size:22px">+</div>
+        <div style="font-size:9px;margin-top:2px">إضافة</div>
+      </div>`;
+  }
+
+  if (count) count.textContent = portfolioImages.length + ' / 8 صور';
+
+  // Save to provider
+  _provider.portfolio = portfolioImages;
+  sessionStorage.setItem('lancul_provider', JSON.stringify(_provider));
+}
+
+function removePortfolioImg(idx) {
+  portfolioImages.splice(idx, 1);
+  renderPortfolioGrid();
+  toast('تم حذف الصورة');
+}
+
+function openPortfolioView(idx) {
+  // Lightbox
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  overlay.onclick = () => overlay.remove();
+
+  let current = idx;
+  const img = document.createElement('img');
+  img.style.cssText = 'max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.5)';
+  img.src = portfolioImages[current].src;
+
+  // Navigation
+  const nav = (dir) => {
+    current = (current + dir + portfolioImages.length) % portfolioImages.length;
+    img.src = portfolioImages[current].src;
+    counter.textContent = (current+1) + ' / ' + portfolioImages.length;
+  };
+
+  const counter = document.createElement('div');
+  counter.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:13px;font-family:"Sora",sans-serif';
+  counter.textContent = (idx+1) + ' / ' + portfolioImages.length;
+
+  if (portfolioImages.length > 1) {
+    ['→','←'].forEach((arrow, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = arrow;
+      btn.style.cssText = `position:absolute;${i===0?'right':'left'}:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.1);border:none;color:white;font-size:22px;width:44px;height:44px;border-radius:50%;cursor:pointer`;
+      btn.onclick = (e) => { e.stopPropagation(); nav(i===0?1:-1); };
+      overlay.appendChild(btn);
+    });
+  }
+
+  overlay.appendChild(img);
+  overlay.appendChild(counter);
+  document.body.appendChild(overlay);
+}
+
+// Load portfolio on dashboard init
+function loadPortfolio() {
+  if (_provider.portfolio && _provider.portfolio.length) {
+    portfolioImages = _provider.portfolio;
+    renderPortfolioGrid();
+  }
+}
+
 </script>
+<script src="supabase.js"></script>
 </body>
 </html>

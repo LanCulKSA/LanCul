@@ -51,7 +51,58 @@
     "numberOfItems": "1000",
     "itemListOrder": "https://schema.org/ItemListOrderDescending"
   }
-  </script>
+  
+function openLightbox(pid, startIdx) {
+  const p = PROVIDERS.find(x => x.id === pid);
+  if (!p || !p.portfolio) return;
+  const images = p.portfolio;
+  let current = startIdx;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  overlay.onclick = () => overlay.remove();
+
+  const img = document.createElement('img');
+  img.style.cssText = 'max-width:90vw;max-height:85vh;border-radius:12px;object-fit:contain';
+  img.src = images[current].src || images[current];
+
+  const counter = document.createElement('div');
+  counter.style.cssText = 'position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:13px;font-family:"Sora",sans-serif';
+  counter.textContent = (current+1) + ' / ' + images.length;
+
+  if (images.length > 1) {
+    ['→','←'].forEach((arrow, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = arrow;
+      btn.style.cssText = `position:absolute;${i===0?'right':'left'}:20px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.1);border:none;color:white;font-size:22px;width:44px;height:44px;border-radius:50%;cursor:pointer`;
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        current = (current + (i===0?1:-1) + images.length) % images.length;
+        img.src = images[current].src || images[current];
+        counter.textContent = (current+1) + ' / ' + images.length;
+      };
+      overlay.appendChild(btn);
+    });
+  }
+  overlay.appendChild(img);
+  overlay.appendChild(counter);
+  document.body.appendChild(overlay);
+}
+
+
+function startChat(providerId) {
+  // Check if logged in
+  const u = getUser();
+  if (!u) {
+    openAuth('login');
+    // After login, redirect to chat
+    sessionStorage.setItem('pendingChat', providerId);
+    return;
+  }
+  window.location.href = 'chat.html?provider=' + providerId;
+}
+
+</script>
 <title>المرشدون والمترجمون السعوديون | LanCul لانكول</title>
 <link rel="stylesheet" href="shared.css">
 <style>
@@ -319,7 +370,7 @@ function applyFilters(){
   document.getElementById("provGrid").innerHTML=list.map(p=>`
     <div class="pcard" onclick="openDetail('${p.id}')">
       <div class="pcard-top">
-        <div class="av">${p.name.slice(0,2)}</div>
+        <div class="av" style="overflow:hidden">${p.photoUrl ? `<img src="${p.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : p.name.slice(0,2)}</div>
         <div style="flex:1;z-index:1"><div class="pname">${currentLang!=="ar"&&p.nameEn?p.nameEn:p.name}${p.verified?" ✅":""}</div><div class="pcity">?? ${p.city} · ${p.reviews} ${typeof t==="function"?t("reviews")||"reviews":"reviews"}</div></div>
         <div class="rtag">★ ${p.rating}</div>
       </div>

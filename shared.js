@@ -367,7 +367,7 @@ function confirmBooking_new(pid) {
   if (!user) { closeModal(); openAuth('login'); return; }
   const date = document.getElementById('bkDate')?.value;
   const time = document.getElementById('bkTime')?.value;
-  if (!date || !time) { toast_shared('اختر التاريخ والوقت', 'err'); return; }
+  if (!date || !time) { toast('اختر التاريخ والوقت', 'err'); return; }
   const p = PROVIDERS.find(x => x.id === pid);
   const hrs = parseFloat(document.getElementById('bkHrs')?.value || 2);
   const total = calcPrice(p, hrs, _bkCar);
@@ -380,7 +380,7 @@ function confirmBooking_new(pid) {
   };
   const saved = saveBooking(bk);
   closeModal();
-  toast_shared('تم الحجز ✅ فُتحت قناة التواصل مع ' + p.name);
+  toast('تم الحجز ✅ فُتحت قناة التواصل مع ' + p.name);
   // redirect to chat
   setTimeout(() => { window.location.href = 'chat.html?provider=' + pid + '&booking=' + saved.id; }, 1200);
 }
@@ -420,18 +420,42 @@ function selRole(r) {
   document.getElementById('roleProvider')?.style && (document.getElementById('roleProvider').style.borderColor = r==='provider'?'#E8506A':'#EEF0F7');
 }
 
-function doAuth(mode) {
-  const email = document.getElementById('authEmail')?.value;
+async function doAuth(mode) {
+  const email = document.getElementById('authEmail')?.value?.trim();
   const pass  = document.getElementById('authPass')?.value;
-  if (!email || !pass) { toast_shared('يرجى تعبئة جميع الحقول', 'err'); return; }
+  if (!email || !pass) { toast('يرجى تعبئة جميع الحقول', 'err'); return; }
   const name = document.getElementById('authName')?.value || email.split('@')[0];
-  setUser({ name, email, role: mode==='signup' ? _selectedRole : 'client' });
-  closeModal();
-  toast_shared('مرحباً ' + name + '! 🎉');
-  setTimeout(() => location.reload(), 600);
+  const btn = document.querySelector('.overlay button[onclick]');
+  if (btn) { btn.disabled = true; btn.textContent = 'جاري...'; }
+  try {
+    if (window.db && window._sb) {
+      // Supabase auth
+      if (mode === 'signup') {
+        await window.db.signUp(email, pass, name, _selectedRole || 'client');
+        toast('✅ تم إنشاء حسابك! تحقق من بريدك');
+      } else {
+        await window.db.signIn(email, pass);
+        toast('مرحباً! 🎉');
+      }
+    } else {
+      // localStorage fallback
+      setUser({ name, email, role: mode==='signup' ? (_selectedRole||'client') : 'client' });
+      toast('مرحباً ' + name + '! 🎉');
+    }
+    closeModal();
+    setTimeout(() => {
+      if (typeof initNav === 'function') initNav();
+      if (typeof initDash === 'function') initDash();
+      else location.reload();
+    }, 500);
+  } catch(err) {
+    const msg = err.message?.includes('Invalid') ? 'بريد أو كلمة مرور خاطئة' : (err.message || 'حدث خطأ');
+    toast(msg, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = mode==='login' ? 'دخول' : 'إنشاء الحساب'; }
+  }
 }
 
-function doLogout() { logout(); toast_shared('تم تسجيل الخروج'); setTimeout(() => location.reload(), 600); }
+function doLogout() { logout(); toast('تم تسجيل الخروج'); setTimeout(() => location.reload(), 600); }
 
 /* ═══════════════════════════════════════════
    LANGUAGE ENGINE
@@ -444,7 +468,7 @@ function doLogout() { logout(); toast_shared('تم تسجيل الخروج'); se
 /* ═══════════════════════════════════════════
    TOAST (shared)
 ═══════════════════════════════════════════ */
-function toast_shared(msg, type='ok') {
+function toast(msg, type='ok') {
   let wrap = document.getElementById('toastWrap') || document.getElementById('tw');
   if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tw'; wrap.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none;'; document.body.appendChild(wrap); }
   const el = document.createElement('div');

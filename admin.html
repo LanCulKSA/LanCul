@@ -223,9 +223,57 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
 
 <!-- ──────── CHAT MONITOR ──────── -->
 <div id="t-chats" style="display:none">
-  <h2 style="font-size:18px;font-weight:800;margin-bottom:16px">🔍 مراقبة المحادثات</h2>
-  <p style="font-size:13px;color:var(--g500);margin-bottom:16px" data-t="admin_chat_note">للرجوع للمحادثات عند الحاجة — جميع المحادثات مسجلة ومحفوظة</p>
-  <div id="chatMonitorList"></div>
+  <!-- Alerts bar -->
+  <div style="background:rgba(231,76,60,.05);border:1px solid rgba(231,76,60,.15);border-radius:var(--r);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">🚨</span>
+      <span style="font-weight:700;font-size:13px">التنبيهات الأمنية</span>
+      <span id="alertsBadge" style="background:var(--red);color:white;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;min-width:18px;text-align:center"></span>
+    </div>
+    <button onclick="loadAdminAlerts();document.getElementById('alertsPanel').style.display=document.getElementById('alertsPanel').style.display==='none'?'block':'none'"
+      style="background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.2);border-radius:8px;padding:6px 14px;font-family:'Tajawal',sans-serif;font-size:12px;cursor:pointer;font-weight:700">
+      ⚠️ عرض التنبيهات ↕
+    </button>
+  </div>
+  <div id="alertsPanel" style="display:none;margin-bottom:16px">
+    <div id="alertsList">
+      <div style="text-align:center;padding:16px;color:var(--g500);font-size:13px">اضغط "عرض التنبيهات" لتحميلها</div>
+    </div>
+  </div>
+
+  <!-- Chat monitor -->
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:0;background:white;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;min-height:580px">
+    <!-- List -->
+    <div style="border-left:1px solid var(--g100);display:flex;flex-direction:column">
+      <div style="padding:10px 12px;border-bottom:1px solid var(--g100);display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="loadAdminChats('all')" style="background:var(--pink);color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif">الكل</button>
+        <button onclick="loadAdminChats('flagged')" style="background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.2);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif">⚠️ مشبوهة</button>
+        <button onclick="loadAdminChats()" style="background:var(--g50);color:var(--g500);border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:'Tajawal',sans-serif">🔄</button>
+      </div>
+      <div id="adminChatList" style="flex:1;overflow-y:auto">
+        <div style="padding:20px;text-align:center;color:var(--g500);font-size:13px">
+          <button onclick="loadAdminChats()" style="background:var(--pink);color:white;border:none;border-radius:8px;padding:8px 16px;font-family:'Tajawal',sans-serif;font-size:13px;cursor:pointer;font-weight:700">تحميل المحادثات</button>
+        </div>
+      </div>
+    </div>
+    <!-- Messages -->
+    <div style="display:flex;flex-direction:column">
+      <div id="adminChatHead">
+        <div style="padding:14px 16px;color:var(--g500);font-size:13px;border-bottom:1px solid var(--g100);text-align:center">
+          اختر محادثة من القائمة
+        </div>
+      </div>
+      <div id="adminMsgsArea" style="flex:1;overflow-y:auto;background:#F8F9FC;min-height:400px">
+        <div style="text-align:center;padding:40px;color:var(--g500)">
+          <div style="font-size:36px;margin-bottom:10px;opacity:.4">💬</div>
+          <p style="font-size:13px">اختر محادثة لعرض الرسائل</p>
+        </div>
+      </div>
+      <div style="padding:8px 14px;background:white;border-top:1px solid var(--g100)">
+        <div style="font-size:11px;color:var(--g500);text-align:center">🔍 وضع المشاهدة فقط — لا يمكنك التدخل في المحادثات</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ──────── BOOKINGS ──────── -->
@@ -440,6 +488,299 @@ document.addEventListener("DOMContentLoaded",()=>{
     document.getElementById("adminPg").style.display="flex";
   }
 });
+
+// ════ ADMIN CHAT MONITOR ════════════════════════════════════════
+let _allChats = [];
+let _activeChatMsgs = [];
+let _adminRealtimeSub = null;
+
+async function loadAdminChats(filter = 'all') {
+  const cont = document.getElementById('adminChatList');
+  if (!cont) return;
+  cont.innerHTML = '<div style="padding:20px;text-align:center;color:var(--g500)">جاري التحميل...</div>';
+
+  let chats = [];
+  if (window._sb) {
+    try {
+      const { data } = await window._sb
+        .from('chats')
+        .select(`
+          *,
+          client:client_id(name,email),
+          provider:provider_id(name,city),
+          messages!inner(id,text,type,flagged,created_at)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (data) chats = data;
+    } catch(e) { console.log('Supabase chats error:', e); }
+  }
+
+  // Fallback: localStorage
+  if (!chats.length) {
+    const ls = JSON.parse(localStorage.getItem('lc_chats_list')||'[]');
+    chats = ls;
+  }
+
+  _allChats = chats;
+
+  // Filter
+  if (filter === 'flagged') {
+    chats = chats.filter(c => c.messages?.some(m => m.flagged));
+  }
+
+  if (!chats.length) {
+    cont.innerHTML = '<div style="padding:30px;text-align:center;color:var(--g500)"><div style="font-size:36px;margin-bottom:8px">💬</div><p style="font-size:13px">لا توجد محادثات</p></div>';
+    return;
+  }
+
+  cont.innerHTML = chats.map(chat => {
+    const client = chat.client || {};
+    const prov   = chat.provider || {};
+    const msgs   = chat.messages || [];
+    const hasFlag = msgs.some(m => m.flagged);
+    const lastMsg = msgs[msgs.length-1];
+    const time = lastMsg?.created_at ? new Date(lastMsg.created_at).toLocaleTimeString('ar',{hour:'2-digit',minute:'2-digit'}) : '';
+    return `
+      <div onclick="openAdminChat('${chat.id}')"
+        style="padding:12px 14px;border-bottom:1px solid var(--g50);cursor:pointer;transition:background .15s;background:${hasFlag?'rgba(231,76,60,.04)':'white'};display:flex;gap:10px;align-items:center"
+        onmouseover="this.style.background='${hasFlag?'rgba(231,76,60,.08)':'var(--g50)'}'"
+        onmouseout="this.style.background='${hasFlag?'rgba(231,76,60,.04)':'white'}'">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">
+            ${client.name||'عميل'} ↔ ${prov.name||'مُقدم'}
+            ${hasFlag?'<span style="background:rgba(231,76,60,.12);color:var(--red);border-radius:6px;padding:1px 7px;font-size:9px;font-weight:700">⚠️ محتوى مشبوه</span>':''}
+          </div>
+          <div style="font-size:11px;color:var(--g500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">
+            ${lastMsg?.text||'محادثة جديدة'}
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--g300);flex-shrink:0">${time}</div>
+        <div style="font-size:11px;color:var(--g500);flex-shrink:0">${msgs.length} رسالة</div>
+      </div>`;
+  }).join('');
+}
+
+async function openAdminChat(chatId) {
+  const chat = _allChats.find(c => c.id === chatId);
+  if (!chat) return;
+
+  // Update header
+  const head = document.getElementById('adminChatHead');
+  if (head) {
+    const client = chat.client || {};
+    const prov   = chat.provider || {};
+    head.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--g100);background:white">
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:14px">${client.name||'عميل'} ↔ ${prov.name||'مُقدم'}</div>
+          <div style="font-size:11px;color:var(--g500)">${client.email||''} · ${prov.city||''}</div>
+        </div>
+        <span style="font-size:11px;color:var(--g500);background:var(--g50);padding:3px 10px;border-radius:6px">🔍 وضع المشاهدة فقط</span>
+      </div>`;
+  }
+
+  // Load messages
+  let msgs = [];
+  if (window._sb) {
+    try {
+      const { data } = await window._sb
+        .from('messages')
+        .select('*')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true });
+      if (data) msgs = data;
+    } catch(e) {}
+  }
+
+  renderAdminMessages(msgs, chat);
+
+  // Realtime subscription for admin
+  if (window._sb) {
+    if (_adminRealtimeSub) window._sb.removeChannel(_adminRealtimeSub);
+    _adminRealtimeSub = window._sb
+      .channel('admin_chat_' + chatId)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public',
+        table: 'messages', filter: 'chat_id=eq.' + chatId
+      }, payload => {
+        appendAdminMessage(payload.new, chat);
+      })
+      .subscribe();
+  }
+}
+
+function renderAdminMessages(msgs, chat) {
+  const area = document.getElementById('adminMsgsArea');
+  if (!area) return;
+
+  if (!msgs.length) {
+    area.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g500)"><p style="font-size:13px">لا توجد رسائل</p></div>';
+    return;
+  }
+
+  area.innerHTML = msgs.map(msg => renderAdminMsg(msg, chat)).join('');
+  area.scrollTop = area.scrollHeight;
+}
+
+function renderAdminMsg(msg, chat) {
+  const client = chat?.client || {};
+  const prov   = chat?.provider || {};
+  const isClient = msg.sender_id === chat?.client_id;
+  const senderName = isClient ? (client.name||'العميل') : (prov.name||'المُقدم');
+  const senderColor = isClient ? 'var(--blue)' : 'var(--pink)';
+  const time = msg.created_at ? new Date(msg.created_at).toLocaleString('ar') : '';
+
+  if (msg.type === 'system') {
+    return `<div style="text-align:center;margin:8px 0"><span style="background:var(--g50);color:var(--g500);font-size:11px;padding:3px 12px;border-radius:10px">${msg.text}</span></div>`;
+  }
+
+  let content = '';
+  if (msg.type === 'image') {
+    content = `<img src="${msg.image_thumb||msg.image_url}" style="max-width:180px;border-radius:8px;cursor:pointer" onclick="adminViewImg('${msg.image_url||msg.image_thumb}')">`;
+  } else if (msg.type === 'booking_request') {
+    const bk = msg.metadata?.booking || {};
+    content = `<div style="background:var(--g50);border-radius:8px;padding:8px;font-size:12px">📅 طلب حجز: ${bk.service||'خدمة'} · ${bk.date||'—'} · ${bk.total||0} ر.س</div>`;
+  } else {
+    content = `<div style="font-size:13px;line-height:1.6">${escapeHtml(msg.text||'')}</div>`;
+  }
+
+  const flagBadge = msg.flagged ? `
+    <div style="background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:6px;padding:5px 10px;margin-top:5px;font-size:11px;color:var(--red)">
+      ⚠️ تم الكشف عن: <strong>${msg.flag_type||'معلومات تواصل'}</strong>
+      ${msg.flag_value ? `· <code style="background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">${msg.flag_value}</code>` : ''}
+    </div>` : '';
+
+  return `
+    <div style="padding:10px 14px;border-bottom:1px solid var(--g50)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <span style="font-size:12px;font-weight:700;color:${senderColor}">${senderName}</span>
+        <span style="font-size:10px;color:var(--g300)">${time}</span>
+        ${msg.type==='image'?'<span style="background:rgba(74,144,226,.1);color:var(--blue);border-radius:4px;padding:1px 6px;font-size:9px">صورة</span>':''}
+      </div>
+      ${content}
+      ${flagBadge}
+    </div>`;
+}
+
+function appendAdminMessage(msg, chat) {
+  const area = document.getElementById('adminMsgsArea');
+  if (!area) return;
+  const div = document.createElement('div');
+  div.innerHTML = renderAdminMsg(msg, chat);
+  area.appendChild(div.firstElementChild || div);
+  area.scrollTop = area.scrollHeight;
+  // Show notification if flagged
+  if (msg.flagged) {
+    toast('⚠️ رسالة مشبوهة جديدة في الشات!', 'err');
+  }
+}
+
+function adminViewImg(src) {
+  if (!src) return;
+  const o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;flex-direction:column;gap:12px';
+  o.onclick = () => o.remove();
+  const img = document.createElement('img');
+  img.src = src;
+  img.style.cssText = 'max-width:90vw;max-height:80vh;border-radius:12px;object-fit:contain';
+  img.onclick = e => e.stopPropagation();
+  const note = document.createElement('div');
+  note.style.cssText = 'color:rgba(255,255,255,.5);font-size:12px';
+  note.textContent = 'صورة من المحادثة — للعرض الإداري فقط';
+  o.appendChild(img);
+  o.appendChild(note);
+  document.body.appendChild(o);
+}
+
+// ════ ADMIN ALERTS ════════════════════════════════════════════════
+let _alertsRealtimeSub = null;
+
+async function loadAdminAlerts() {
+  const cont = document.getElementById('alertsList');
+  if (!cont) return;
+
+  let alerts = [];
+  if (window._sb) {
+    try {
+      const { data } = await window._sb
+        .from('admin_alerts')
+        .select('*')
+        .eq('resolved', false)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (data) alerts = data;
+    } catch(e) {}
+  }
+  if (!alerts.length) {
+    alerts = JSON.parse(localStorage.getItem('lc_admin_alerts')||'[]').filter(a=>!a.resolved);
+  }
+
+  // Update badge
+  const badge = document.getElementById('alertsBadge');
+  if (badge) badge.textContent = alerts.length || '';
+
+  if (!alerts.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:30px;color:var(--g500)"><div style="font-size:36px;margin-bottom:8px">✅</div><p style="font-size:13px">لا توجد تنبيهات غير محلولة</p></div>';
+    return;
+  }
+
+  const TYPE_LABELS = { phone:'📞 رقم هاتف', email:'📧 بريد إلكتروني', whatsapp:'💬 واتساب', social:'🔗 تواصل اجتماعي', contact_share:'📤 تبادل معلومات' };
+
+  cont.innerHTML = alerts.map(al => `
+    <div style="border:1.5px solid rgba(231,76,60,.2);border-radius:12px;padding:14px;margin-bottom:10px;background:rgba(231,76,60,.02)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <span style="font-weight:800;font-size:13px;color:var(--red)">⚠️ ${TYPE_LABELS[al.flag_type||al.type]||'تنبيه'}</span>
+        <span style="font-size:10px;color:var(--g500)">${al.created_at?new Date(al.created_at).toLocaleString('ar'):''}</span>
+      </div>
+      <div style="font-size:12px;margin-bottom:6px"><strong>المُرسِل:</strong> ${al.from_name||'—'}</div>
+      <div style="font-size:12px;margin-bottom:6px"><strong>القيمة المكشوفة:</strong> <code style="background:rgba(0,0,0,.06);padding:2px 8px;border-radius:4px">${al.flag_value||'—'}</code></div>
+      <div style="font-size:12px;margin-bottom:8px;background:var(--g50);padding:6px 10px;border-radius:8px;color:var(--g700)"><strong>السياق:</strong> ${al.chat_context||'—'}</div>
+      <div style="display:flex;gap:6px">
+        <button onclick="resolveAlert('${al.id}')" style="background:var(--green);color:white;border:none;border-radius:7px;padding:6px 12px;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer">✅ تم الحل</button>
+        ${al.chat_id?`<button onclick="openAdminChat('${al.chat_id}')" style="background:rgba(74,144,226,.1);color:var(--blue);border:1px solid rgba(74,144,226,.2);border-radius:7px;padding:6px 12px;font-family:'Tajawal',sans-serif;font-size:12px;cursor:pointer">🔍 عرض المحادثة</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function resolveAlert(alertId) {
+  if (window._sb) {
+    try { await window._sb.from('admin_alerts').update({ resolved:true, resolved_at: new Date().toISOString() }).eq('id', alertId); } catch(e) {}
+  } else {
+    const alerts = JSON.parse(localStorage.getItem('lc_admin_alerts')||'[]');
+    const al = alerts.find(a=>a.id===alertId);
+    if (al) { al.resolved = true; localStorage.setItem('lc_admin_alerts', JSON.stringify(alerts)); }
+  }
+  toast('✅ تم تحديد التنبيه كمحلول');
+  loadAdminAlerts();
+}
+
+// Realtime alerts subscription
+function subscribeToAlerts() {
+  if (!window._sb) return;
+  _alertsRealtimeSub = window._sb
+    .channel('admin_alerts_channel')
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'admin_alerts'
+    }, payload => {
+      // Flash notification
+      const msg = payload.new;
+      const TYPE_L = { phone:'رقم هاتف', email:'بريد إلكتروني', whatsapp:'واتساب', social:'حساب تواصل' };
+      toast(`⚠️ تنبيه جديد: تبادل ${TYPE_L[msg.flag_type]||'معلومات'} — ${msg.from_name||'مستخدم'}`, 'err');
+      // Update badge
+      const badge = document.getElementById('alertsBadge');
+      if (badge) badge.textContent = (parseInt(badge.textContent)||0) + 1;
+      // Reload list if visible
+      if (document.getElementById('alertsList')?.offsetParent) loadAdminAlerts();
+    })
+    .subscribe();
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 </script>
 <script src="lang.js"></script>
 <script src="supabase.js"></script>
@@ -469,29 +810,70 @@ function gTab(name,el){
   if(name==="chats") renderChatMonitor();
   if(name==="bookings") renderBookings();
   if(name==="rfq") renderRFQAdmin();
-  if(name==="providers") renderProviders();
-  if(name==="commission") renderCommission();
-  if(name==="marketplace") renderMkt();
-  if(name==="experiences") renderExp();
-  if(name==="languages") renderLanguages();
-}
-
-// ─── LOAD ALL ─────────────────────────────────
-async function loadAll(){
-  let bks, rfqs, apps, summary;
-  if(window.db && window._sb){
-    try {
-      [bks, rfqs, apps, summary] = await Promise.all([
-        window.db.fetchAllBookings(),
-        window.db.fetchRFQs(),
-        window.db.fetchPendingProviders(),
-        window.db.adminSummary(),
-      ]);
-    } catch(e) {
-      bks=getBookings(); rfqs=getRFQs();
-      apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
-    }
-  } else {
+  if(name==="providers") function renderProviders(){
+  const apps = JSON.parse(localStorage.getItem('lancul_applications')||'[]');
+  const cont = document.getElementById('appList');
+  if (!cont) return;
+  if (!apps.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g500)"><div style="font-size:42px;margin-bottom:10px">📭</div><p>لا توجد طلبات انضمام</p></div>';
+    return;
+  }
+  // Sort: pending first
+  const sorted = [...apps].sort((a,b) => {
+    if (a.status==='pending' && b.status!=='pending') return -1;
+    if (b.status==='pending' && a.status!=='pending') return 1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  const SVC_LABELS = {guiding:'🗺️ مرشد سياحي',translation:'🌐 مترجم',companion:'🤝 مرافق',airport:'✈️ مطار'};
+  cont.innerHTML = sorted.map(app => {
+    const isPending = app.status === 'pending';
+    const isGuide = (app.serviceTypes||app.offers||[]).includes('guiding');
+    const svcs = (app.serviceTypes||app.offers||[]).map(s => SVC_LABELS[s]||s).join(' · ');
+    const langs = (app.langs||app.languages||[]).join('، ');
+    const date = app.createdAt ? new Date(app.createdAt).toLocaleDateString('ar-SA') : '—';
+    return `
+    <div style="border:1.5px solid ${isPending?'rgba(245,200,66,.3)':'var(--g100)'};border-radius:var(--r);padding:18px;margin-bottom:12px;background:${isPending?'rgba(245,200,66,.03)':'white'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--orange));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:14px;flex-shrink:0">${(app.name||'م').slice(0,2)}</div>
+            <div>
+              <div style="font-weight:800;font-size:15px">${app.name||'—'}</div>
+              ${app.nameEn ? `<div style="font-size:11px;color:var(--g500);font-family:'Sora',sans-serif">${app.nameEn}</div>` : ''}
+            </div>
+            ${isGuide ? '<span style="background:rgba(245,200,66,.15);color:#8a6d00;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">🗺️ مرشد مرخص</span>' : ''}
+            <span style="background:${isPending?'rgba(245,200,66,.12)':'rgba(46,204,142,.12)'};color:${isPending?'#8a6d00':'#1a7a55'};border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">${isPending?'⏳ قيد الانتظار':'✅ مقبول'}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--g500);margin-bottom:8px">
+            <span>📞 ${app.phone||'—'}</span>
+            <span>📧 ${app.email||'—'}</span>
+            <span>📍 ${app.city||'—'}</span>
+            <span>📅 ${date}</span>
+          </div>
+          <div style="font-size:12px;margin-bottom:6px"><strong>الخدمات:</strong> ${svcs||'—'}</div>
+          <div style="font-size:12px;margin-bottom:6px"><strong>اللغات:</strong> ${langs||'—'}</div>
+          ${app.bio ? `<div style="font-size:12px;color:var(--g700);background:var(--g50);border-radius:8px;padding:8px;margin-bottom:8px">${app.bio}</div>` : ''}
+          ${isGuide && app.licenseNum ? `<div style="font-size:12px;background:rgba(74,144,226,.08);border:1px solid rgba(74,144,226,.2);border-radius:8px;padding:8px"><strong>🪪 رقم الرخصة:</strong> ${app.licenseNum}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+          <div style="background:var(--g50);border-radius:10px;padding:10px;font-size:11px;min-width:160px">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--navy)">الأسعار</div>
+            <div>🚶 ${app.pricing?.hourly_no_car||120} / ${app.pricing?.fullday_no_car||650} ر.س</div>
+            <div>🚗 ${app.pricing?.hourly_with_car||160} / ${app.pricing?.fullday_with_car||800} ر.س</div>
+            <div style="font-size:10px;color:var(--g500);margin-top:3px">ساعة / يوم كامل</div>
+          </div>
+          ${isPending ? `
+          <div style="display:flex;gap:6px">
+            <button onclick="approveApp('${app.id}')" style="background:var(--green);color:white;border:none;border-radius:8px;padding:8px 14px;font-family:'Tajawal',sans-serif;font-size:12px;font-weight:700;cursor:pointer">✅ قبول</button>
+            <button onclick="rejectApp('${app.id}')" style="background:rgba(231,76,60,.1);color:var(--red);border:1px solid rgba(231,76,60,.2);border-radius:8px;padding:8px 14px;font-family:'Tajawal',sans-serif;font-size:12px;cursor:pointer">❌ رفض</button>
+          </div>
+          <button onclick="markCallDone('${app.id}')" style="background:rgba(74,144,226,.1);color:#2d6abf;border:1px solid rgba(74,144,226,.2);border-radius:8px;padding:7px 12px;font-family:'Tajawal',sans-serif;font-size:11px;cursor:pointer;width:100%">📞 تم الاتصال والتحقق</button>
+          ` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+} else {
     bks=getBookings(); rfqs=getRFQs();
     apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
   }
@@ -1029,53 +1411,7 @@ function toast(msg,type="ok"){
 function closeModal(){document.querySelectorAll(".overlay").forEach(o=>o.remove());}
 </script>
 
-<script>
-// ── Supabase Auth Override ────────────────────────
-async function doAuth(mode) {
-  const email = document.getElementById("aEmail")?.value?.trim();
-  const pass  = document.getElementById("aPass")?.value;
-  if (!email || !pass) { toast("يرجى تعبئة جميع الحقول", "err"); return; }
-  try {
-    const btn = document.querySelector(".overlay .btn-p");
-    if (btn) { btn.textContent = "جاري..."; btn.disabled = true; }
-    if (mode === "signup") {
-      const name = document.getElementById("aName")?.value || email.split("@")[0];
-      await supaAPI.signUp(email, pass, name, "client");
-      toast("✅ تم إنشاء حسابك! تحقق من بريدك الإلكتروني");
-    } else {
-      await supaAPI.signIn(email, pass);
-      toast("مرحباً! 🎉");
-    }
-    closeModal();
-    setTimeout(async () => {
-      const u = await supaAPI.getUser();
-      if (u) { setUser({ name: u.name, email: u.email, role: u.role }); initNav?.(); }
-      if (typeof initDash === "function") initDash();
-      else location.reload();
-    }, 600);
-  } catch (err) {
-    toast(err.message === "Invalid login credentials" ? "بريد أو كلمة مرور خاطئة" : (err.message || "حدث خطأ"), "err");
-    const btn = document.querySelector(".overlay .btn-p");
-    if (btn) { btn.textContent = mode === "login" ? "دخول" : "إنشاء الحساب"; btn.disabled = false; }
-  }
-}
-async function doLogout() {
-  await supaAPI.signOut();
-  logout();
-  toast("تم تسجيل الخروج");
-  setTimeout(() => { window.location.href = "index.html"; }, 500);
-}
-// Load user from Supabase on page load
-window.addEventListener("supabase_ready", async () => {
-  const u = await supaAPI.getUser();
-  if (u) {
-    setUser({ name: u.name, email: u.email, role: u.role, supaId: u.supaId });
-  }
-  initNav?.();
-  if (typeof initDash === "function") initDash();
-  if (typeof loadAll === "function") loadAll();
-});
-</script>
+
 
 
 
