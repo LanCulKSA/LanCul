@@ -172,6 +172,22 @@ const T = {
     admin_commission:{ar:'عمولة لانكول (ر.س)', en:'LanCul Commission (SAR)', es:'Comisión LanCul (SAR)', fr:'Commission LanCul (SAR)', it:'Commissione LanCul (SAR)', pt:'Comissão LanCul (SAR)', zh:'LanCul佣金 (SAR)', ja:'LanCul手数料 (SAR)', ko:'LanCul 수수료 (SAR)', de:'LanCul-Provision (SAR)', ru:'Комиссия LanCul (SAR)'},
     admin_chat_note:{ar:'للرجوع للمحادثات عند الحاجة — جميع المحادثات مسجلة ومحفوظة', en:'Return to chats when needed — all chats are recorded and saved', es:'Vuelve a los chats cuando sea necesario', fr:'Revenez aux chats si nécessaire', it:'Torna alle chat se necessario', pt:'Volte aos chats quando necessário', zh:'需要时返回对话', ja:'必要に応じてチャットに戻る', ko:'필요할 때 채팅으로 돌아가기', de:'Kehren Sie bei Bedarf zu Chats zurück', ru:'Вернитесь к чатам при необходимости'},
     th_client:{ar:'العميل', en:'Client', es:'Cliente', fr:'Client', it:'Cliente', pt:'Cliente', zh:'客户', ja:'クライアント', ko:'고객', de:'Kunde', ru:'Клиент'},
+    reviews:{ar:'تقييم', en:'reviews', es:'reseñas', fr:'avis', it:'recensioni', pt:'avaliações', zh:'评价', ja:'レビュー', ko:'리뷰', de:'Bewertungen', ru:'отзывов'},
+    profile_title:{ar:'الملف الشخصي', en:'Profile', es:'Perfil', fr:'Profil', it:'Profilo', pt:'Perfil', zh:'个人资料', ja:'プロフィール', ko:'프로필', de:'Profil', ru:'Профиль'},
+    services_offered:{ar:'الخدمات المقدمة', en:'Services Offered', es:'Servicios ofrecidos', fr:'Services proposés', it:'Servizi offerti', pt:'Serviços oferecidos', zh:'提供的服务', ja:'提供サービス', ko:'제공 서비스', de:'Angebotene Dienste', ru:'Предлагаемые услуги'},
+    pricing:{ar:'الأسعار', en:'Pricing', es:'Precios', fr:'Tarifs', it:'Prezzi', pt:'Preços', zh:'价格', ja:'料金', ko:'가격', de:'Preise', ru:'Цены'},
+    hourly_no_car:{ar:'ساعة بدون سيارة', en:'Hourly (no car)', es:'Por hora (sin coche)', fr:'À l`heure (sans voiture)', it:'All`ora (senza auto)', pt:'Por hora (sem carro)', zh:'每小时（无车）', ja:'1時間（車なし）', ko:'시간당 (차 없음)', de:'Stündlich (ohne Auto)', ru:'В час (без авто)'},
+    hourly_with_car:{ar:'ساعة مع سيارة', en:'Hourly (with car)', es:'Por hora (con coche)', fr:'À l`heure (avec voiture)', it:'All`ora (con auto)', pt:'Por hora (com carro)', zh:'每小时（含车）', ja:'1時間（車あり）', ko:'시간당 (차 포함)', de:'Stündlich (mit Auto)', ru:'В час (с авто)'},
+    fullday_no_car:{ar:'يوم كامل بدون سيارة', en:'Full day (no car)', es:'Día completo (sin coche)', fr:'Journée complète (sans voiture)', it:'Giornata intera (senza auto)', pt:'Dia inteiro (sem carro)', zh:'全天（无车）', ja:'1日（車なし）', ko:'하루 종일 (차 없음)', de:'Ganzer Tag (ohne Auto)', ru:'Полный день (без авто)'},
+    fullday_with_car:{ar:'يوم كامل مع سيارة', en:'Full day (with car)', es:'Día completo (con coche)', fr:'Journée complète (avec voiture)', it:'Giornata intera (con auto)', pt:'Dia inteiro (com carro)', zh:'全天（含车）', ja:'1日（車あり）', ko:'하루 종일 (차 포함)', de:'Ganzer Tag (mit Auto)', ru:'Полный день (с авто)'},
+    per_hour:{ar:'للساعة', en:'per hour', es:'por hora', fr:'par heure', it:'all`ora', pt:'por hora', zh:'每小时', ja:'1時間あたり', ko:'시간당', de:'pro Stunde', ru:'в час'},
+    sar:{ar:'ر.س', en:'SAR', es:'SAR', fr:'SAR', it:'SAR', pt:'SAR', zh:'SAR', ja:'SAR', ko:'SAR', de:'SAR', ru:'SAR'},
+    verified_guide:{ar:'مرشد موثّق', en:'Verified Guide', es:'Guía verificado', fr:'Guide vérifié', it:'Guida verificata', pt:'Guia verificado', zh:'认证向导', ja:'認定ガイド', ko:'인증된 가이드', de:'Verifizierter Guide', ru:'Проверенный гид'},
+    specializations:{ar:'التخصصات', en:'Specializations', es:'Especializaciones', fr:'Spécialisations', it:'Specializzazioni', pt:'Especializações', zh:'专业领域', ja:'専門分野', ko:'전문 분야', de:'Spezialisierungen', ru:'Специализации'},
+    languages_spoken:{ar:'اللغات', en:'Languages', es:'Idiomas', fr:'Langues', it:'Lingue', pt:'Idiomas', zh:'语言', ja:'言語', ko:'언어', de:'Sprachen', ru:'Языки'},
+    no_results:{ar:'لا توجد نتائج تطابق فلاتر البحث', en:'No results match your filters', es:'No hay resultados para tus filtros', fr:'Aucun résultat ne correspond à vos filtres', it:'Nessun risultato per i tuoi filtri', pt:'Nenhum resultado para seus filtros', zh:'没有符合筛选条件的结果', ja:'フィルターに一致する結果なし', ko:'필터에 맞는 결과 없음', de:'Keine Ergebnisse für Ihre Filter', ru:'Нет результатов по фильтрам'},
+    per_person:{ar:'للشخص', en:'per person', es:'por persona', fr:'par personne', it:'a persona', pt:'por pessoa', zh:'每人', ja:'一人当たり', ko:'인당', de:'pro Person', ru:'на человека'},
+    persons:{ar:'أشخاص', en:'pax', es:'pers.', fr:'pers.', it:'pers.', pt:'pes.', zh:'人', ja:'名', ko:'명', de:'Pers.', ru:'чел.'},
 
   };
   var langs = Object.keys(T);

@@ -274,51 +274,143 @@ footer img{height:36px;width:36px;border-radius:50%;object-fit:contain;margin-bo
 <script src="shared.js"></script>
 
 
+
 <script>
-// ── Supabase Auth Override ────────────────────────
-async function doAuth(mode) {
-  const email = document.getElementById("aEmail")?.value?.trim();
-  const pass  = document.getElementById("aPass")?.value;
-  if (!email || !pass) { toast("يرجى تعبئة جميع الحقول", "err"); return; }
-  try {
-    const btn = document.querySelector(".overlay .btn-p");
-    if (btn) { btn.textContent = "جاري..."; btn.disabled = true; }
-    if (mode === "signup") {
-      const name = document.getElementById("aName")?.value || email.split("@")[0];
-      await supaAPI.signUp(email, pass, name, "client");
-      toast("✅ تم إنشاء حسابك! تحقق من بريدك الإلكتروني");
-    } else {
-      await supaAPI.signIn(email, pass);
-      toast("مرحباً! 🎉");
-    }
-    closeModal();
-    setTimeout(async () => {
-      const u = await supaAPI.getUser();
-      if (u) { setUser({ name: u.name, email: u.email, role: u.role }); initNav?.(); }
-      if (typeof initDash === "function") initDash();
-      else location.reload();
-    }, 600);
-  } catch (err) {
-    toast(err.message === "Invalid login credentials" ? "بريد أو كلمة مرور خاطئة" : (err.message || "حدث خطأ"), "err");
-    const btn = document.querySelector(".overlay .btn-p");
-    if (btn) { btn.textContent = mode === "login" ? "دخول" : "إنشاء الحساب"; btn.disabled = false; }
-  }
+
+function cityDisplay(ar_city){
+  const lc=typeof currentLang!=='undefined'?currentLang:'ar';
+  if(lc==='ar') return ar_city;
+  const MAP={'الرياض':'Riyadh','جدة':'Jeddah','مكة المكرمة':'Mecca','المدينة المنورة':'Medina','الدمام':'Dammam','أبها':'Abha','العُلا':'AlUla','الكويت':'Kuwait','دبي':'Dubai'};
+  return MAP[ar_city]||ar_city;
 }
-async function doLogout() {
-  await supaAPI.signOut();
-  logout();
-  toast("تم تسجيل الخروج");
-  setTimeout(() => { window.location.href = "index.html"; }, 500);
+
+// Returns language name in current UI language
+function langName(ar_name){
+  const MAP={
+    'اليابانية':      {en:'Japanese',  de:'Japanisch',  ja:'日本語',     zh:'日语',     fr:'Japonais',  es:'Japonés',  ko:'일본어',    ru:'Японский',  it:'Giapponese',pt:'Japonês'},
+    'الصينية (الماندرين)':{en:'Chinese',de:'Chinesisch',ja:'中国語',    zh:'中文',     fr:'Chinois',   es:'Chino',    ko:'중국어',    ru:'Китайский', it:'Cinese',    pt:'Chinês'},
+    'الإنجليزية':     {en:'English',   de:'Englisch',   ja:'英語',       zh:'英语',     fr:'Anglais',   es:'Inglés',   ko:'영어',      ru:'Английский',it:'Inglese',   pt:'Inglês'},
+    'الفرنسية':       {en:'French',    de:'Französisch',ja:'フランス語',  zh:'法语',     fr:'Français',  es:'Francés',  ko:'프랑스어',  ru:'Французский',it:'Francese', pt:'Francês'},
+    'الألمانية':      {en:'German',    de:'Deutsch',    ja:'ドイツ語',   zh:'德语',     fr:'Allemand',  es:'Alemán',   ko:'독일어',    ru:'Немецкий',  it:'Tedesco',   pt:'Alemão'},
+    'الإسبانية':      {en:'Spanish',   de:'Spanisch',   ja:'スペイン語', zh:'西班牙语', fr:'Espagnol',  es:'Español',  ko:'스페인어',  ru:'Испанский', it:'Spagnolo',  pt:'Espanhol'},
+    'البرتغالية':     {en:'Portuguese',de:'Portugiesisch',ja:'ポルトガル語',zh:'葡萄牙语',fr:'Portugais',es:'Portugués',ko:'포르투갈어',ru:'Португальский',it:'Portoghese',pt:'Português'},
+    'الروسية':        {en:'Russian',   de:'Russisch',   ja:'ロシア語',   zh:'俄语',     fr:'Russe',     es:'Ruso',     ko:'러시아어',  ru:'Русский',   it:'Russo',     pt:'Russo'},
+    'الكورية':        {en:'Korean',    de:'Koreanisch', ja:'韓国語',     zh:'韩语',     fr:'Coréen',    es:'Coreano',  ko:'한국어',    ru:'Корейский', it:'Coreano',   pt:'Coreano'},
+    'الإيطالية':      {en:'Italian',   de:'Italienisch',ja:'イタリア語', zh:'意大利语', fr:'Italien',   es:'Italiano', ko:'이탈리아어',ru:'Итальянский',it:'Italiano',  pt:'Italiano'},
+    'الإندونيسية':    {en:'Indonesian',de:'Indonesisch',ja:'インドネシア語',zh:'印尼语',fr:'Indonésien',es:'Indonesio',ko:'인도네시아어',ru:'Индонезийский',it:'Indonesiano',pt:'Indonésio'},
+    'الماليزية':      {en:'Malay',     de:'Malaiisch',  ja:'マレー語',   zh:'马来语',   fr:'Malais',    es:'Malayo',   ko:'말레이어',  ru:'Малайский', it:'Malese',    pt:'Malaio'},
+  };
+  const lc=typeof currentLang!=='undefined'?currentLang:'ar';
+  if(lc==='ar') return ar_name;
+  return (MAP[ar_name]&&MAP[ar_name][lc])||ar_name;
 }
-// Load user from Supabase on page load
-window.addEventListener("sb_ready", async () => {
-  const u = await supaAPI.getUser();
-  if (u) {
-    setUser({ name: u.name, email: u.email, role: u.role, supaId: u.supaId });
-  }
-  initNav?.();
-  if (typeof initDash === "function") initDash();
-  if (typeof loadAll === "function") loadAll();
+
+const getSVC()={guiding:"<span class='chip cg'>??️ مرشد</span>",translation:"<span class='chip co'>?? ترجمة</span>",airport:"<span class='chip cb'>✈️ مطار</span>",experience:"<span class='chip cp'>⭐ تجارب</span>"};
+let _spec="";
+function applyFilters(){
+  const city=document.getElementById("fCity").value,lang=document.getElementById("fLang").value,svc=document.getElementById("fSvc").value,sort=document.getElementById("fSort").value;
+  let list=PROVIDERS.filter(p=>{if(city&&p.city!==city)return false;if(lang&&!p.languages.includes(lang))return false;if(svc&&!p.offers.includes(svc))return false;if(_spec&&!p.specializations.includes(_spec))return false;return true;});
+  if(sort==="price_asc")list.sort((a,b)=>a.pricing.hourly_no_car-b.pricing.hourly_no_car);
+  else if(sort==="price_desc")list.sort((a,b)=>b.pricing.hourly_no_car-a.pricing.hourly_no_car);
+  else if(sort==="jobs")list.sort((a,b)=>b.jobs-a.jobs);
+  else list.sort((a,b)=>b.rating-a.rating);
+  document.getElementById("resCount").textContent=list.length+" نتيجة";
+  document.getElementById("emptyState").style.display=list.length?"none":"block";
+  document.getElementById("provGrid").innerHTML=list.map(p=>`
+    <div class="pcard" onclick="openDetail('${p.id}')">
+      <div class="pcard-top">
+        <div class="av">${p.name.slice(0,2)}</div>
+        <div style="flex:1;z-index:1"><div class="pname">${currentLang!=="ar"&&p.nameEn?p.nameEn:p.name}${p.verified?" ✅":""}</div><div class="pcity">?? ${p.city} · ${p.reviews} ${typeof t==="function"?t("reviews")||"reviews":"reviews"}</div></div>
+        <div class="rtag">★ ${p.rating}</div>
+      </div>
+      <div class="pcard-body">
+        <div class="chips">${p.languages.map(l=>`<span class="chip cd">${LANG_FLAGS[l]||"??"} ${l}</span>`).join("")}</div>
+        <div class="chips">${p.specializations.slice(0,3).map(s=>`<span class="chip cp">${s}</span>`).join("")}</div>
+        <div class="chips" style="margin-bottom:10px">${p.offers.map(s=>getSVC()[s]||"").join("")}</div>
+        <div style="background:var(--g50);border-radius:var(--rs);padding:10px;margin-bottom:10px">
+          <div style="font-size:11px;color:var(--g500);margin-bottom:6px">الأسعار</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="font-size:12px"><span style="color:var(--g500)">?? ساعة</span> <b>${p.pricing.hourly_no_car}</b> ر.س</div>
+            <div style="font-size:12px"><span style="color:var(--g500)">?? ساعة</span> <b>${p.pricing.hourly_with_car}</b> ر.س</div>
+            <div style="font-size:12px"><span style="color:var(--g500)">?? يوم</span> <b>${p.pricing.fullday_no_car}</b> ر.س</div>
+            <div style="font-size:12px"><span style="color:var(--g500)">?? يوم</span> <b style="color:var(--pink)">${p.pricing.fullday_with_car}</b> ر.س</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-p btn-sm" style="flex:2" onclick="event.stopPropagation();openBooking('${p.id}')">احجز الآن</button>
+          <a href="chat.html?provider=${p.id}" class="btn btn-o btn-sm" style="flex:1" onclick="event.stopPropagation()">?? تواصل</a>
+        </div>
+      </div>
+    </div>`).join("");
+}
+function setSpec(btn,v){_spec=v;document.querySelectorAll(".spec-chip").forEach(b=>b.classList.remove("on"));btn.classList.add("on");applyFilters();}
+function resetFilters(){_spec="";["fCity","fLang","fSvc"].forEach(id=>document.getElementById(id).value="");document.getElementById("fSort").value="rating";document.querySelectorAll(".spec-chip").forEach((b,i)=>b.classList.toggle("on",i===0));applyFilters();}
+
+function openDetail(pid){
+  const p=PROVIDERS.find(x=>x.id===pid);if(!p)return;
+  const pr=p.pricing;
+  closeModal();const o=document.createElement("div");o.className="overlay";
+  o.innerHTML=`<div class="modal">
+    <div class="mhead"><h2>الملف الشخصي</h2><button class="xbtn" onclick="closeModal()">×</button></div>
+    <div style="background:linear-gradient(135deg,#0D1B3E,#1d2f5a);border-radius:var(--rs);padding:16px;display:flex;gap:12px;align-items:center;margin-bottom:16px">
+      <div class="av av-lg">${p.name.slice(0,2)}</div>
+      <div style="flex:1"><div style="color:white;font-size:16px;font-weight:700">${p.name}${p.verified?" ✅":""}</div>
+        <div style="color:var(--g300);font-size:12px;margin-top:3px">?? ${p.city}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${p.languages.map(l=>`<span class="chip cd" style="font-size:11px">${LANG_FLAGS[l]||"??"} ${l}</span>`).join("")}</div>
+      </div><div class="rtag" style="font-size:15px">★ ${p.rating}</div>
+    </div>
+    <p style="font-size:13px;line-height:1.7;color:var(--g700);margin-bottom:14px">${p.bio}</p>
+    <div style="background:var(--g50);border-radius:var(--rs);padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--g500);margin-bottom:10px">جدول الأسعار الكامل</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:white;border-radius:8px;padding:10px;text-align:center;border:1px solid var(--g100)"><div style="font-size:10px;color:var(--g500)">?? ساعة</div><div style="font-size:20px;font-weight:900;color:var(--navy)">${pr.hourly_no_car}</div><div style="font-size:10px;color:var(--g500)">ر.س</div></div>
+        <div style="background:white;border-radius:8px;padding:10px;text-align:center;border:1px solid var(--g100)"><div style="font-size:10px;color:var(--g500)">?? ساعة</div><div style="font-size:20px;font-weight:900;color:var(--orange)">${pr.hourly_with_car}</div><div style="font-size:10px;color:var(--g500)">ر.س</div></div>
+        <div style="background:white;border-radius:8px;padding:10px;text-align:center;border:1px solid var(--g100)"><div style="font-size:10px;color:var(--g500)">?? يوم كامل</div><div style="font-size:20px;font-weight:900;color:var(--navy)">${pr.fullday_no_car}</div><div style="font-size:10px;color:var(--g500)">ر.س</div></div>
+        <div style="background:white;border-radius:8px;padding:10px;text-align:center;border:1.5px solid var(--pink)"><div style="font-size:10px;color:var(--g500)">?? يوم كامل</div><div style="font-size:20px;font-weight:900;color:var(--pink)">${pr.fullday_with_car}</div><div style="font-size:10px;color:var(--g500)">ر.س</div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="chat.html?provider=${p.id}" class="btn btn-o" style="flex:1">?? تواصل</a>
+      <button class="btn btn-p" style="flex:2" onclick="closeModal();openBooking('${p.id}')">احجز الآن</button>
+    </div>
+  </div>`;
+  document.body.appendChild(o);o.addEventListener("click",e=>{if(e.target===o)closeModal();});
+}
+
+// Register
+let _step=1,_rData={};
+function regNext(from){
+  if(from===1){_rData.name=document.getElementById("rName").value;if(!_rData.name){toast("أدخل اسمك","err");return;}_rData.phone=document.getElementById("rPhone").value;_rData.city=document.getElementById("rCity").value;_rData.email=document.getElementById("rEmail").value;_rData.bio=document.getElementById("rBio").value;}
+  if(from===2){_rData.langs=document.getElementById("rLangs").value;if(!_rData.langs){toast("اختر لغة واحدة على الأقل","err");return;}_rData.specs=document.getElementById("rSpecs").value;_rData.offers=document.getElementById("rOffers").value;}
+  _step++;showStep(_step);
+}
+function regBack(from){_step=from-1;showStep(_step);}
+function showStep(n){
+  [1,2,3].forEach(i=>{document.getElementById("step"+i).style.display=i===n?"block":"none";const d=document.getElementById("sd"+i);d.className="rs "+(i<n?"done":i===n?"active":"");});
+  if(document.getElementById("sl12"))document.getElementById("sl12").className="rs-line "+(n>1?"done":"");
+  if(document.getElementById("sl23"))document.getElementById("sl23").className="rs-line "+(n>2?"done":"");
+  document.getElementById("stepLbl").textContent="الخطوة "+n+" من 3";
+}
+function toggleChip(el,hid){el.classList.toggle("on");const vals=[...el.closest("[style*='flex-wrap']").querySelectorAll(".cbchip-r.on")].map(c=>c.dataset.v).join(",");document.getElementById(hid).value=vals;}
+function updatePricePreview(){
+  ["1","2","3","4"].forEach((n,i)=>{const ids=["rH_nc","rH_c","rFD_nc","rFD_c"];const v=document.getElementById(ids[i])?.value;const el=document.getElementById("prev"+n);if(el)el.textContent=v||"—";});
+}
+function submitReg(){
+  const h=document.getElementById("rH_nc").value,fd=document.getElementById("rFD_nc").value;
+  if(!h||!fd){toast("أدخل الأسعار","err");return;}
+  const apps=JSON.parse(localStorage.getItem("lancul_applications")||"[]");
+  _rData.id="app_"+Date.now();_rData.status="pending";
+  _rData.pricing={hourly_no_car:+h,hourly_with_car:+(document.getElementById("rH_c").value||0),fullday_no_car:+fd,fullday_with_car:+(document.getElementById("rFD_c").value||0)};
+  _rData.submittedAt=new Date().toISOString();
+  apps.unshift(_rData);localStorage.setItem("lancul_applications",JSON.stringify(apps));
+  toast("تم إرسال طلبك ✅ سيتواصل معك فريقنا خلال 24–48 ساعة");_step=1;showStep(1);
+}
+applyFilters();buildLangDD();initNav();
+if(location.hash==="#register")setTimeout(()=>document.getElementById("register").scrollIntoView({behavior:"smooth"}),400);
+</script>
+<script>
+document.addEventListener("langchange", function(){
+  if(typeof applyFilters==="function") applyFilters();
 });
 </script>
 </body>
