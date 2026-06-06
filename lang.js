@@ -217,7 +217,7 @@ var LANGS_CFG = [
 ];
 
 // ── STATE ──────────────────────────────────────
-var currentLang = localStorage.getItem('lancul_lang') || 'ar';
+var currentLang = localStorage.getItem('lancul_lang') || 'en';
 
 // ── SET LANG (main apply function) ─────────────
 function setLang(lc) {
@@ -362,5 +362,5 @@ function switchLang(lc) {
 
 // ── AUTO INIT ON DOM READY ─────────────────────
 document.addEventListener('DOMContentLoaded', function() {
-  setLang(localStorage.getItem('lancul_lang') || 'ar');
+  setLang(localStorage.getItem('lancul_lang') || 'en');
 });
