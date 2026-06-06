@@ -178,8 +178,8 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
     </a>
   </div>
   <div style="display:flex;align-items:center;gap:7px">
-    <a href="client.html" class="btn btn-ghost btn-sm">← حسابي</a>
-    <button class="btn btn-p btn-sm" onclick="openNewBookingModal()">+ طلب خدمة</button>
+    <a href="client.html" class="btn btn-ghost btn-sm" data-t="back_account">← حسابي</a>
+    <button class="btn btn-p btn-sm" onclick="openNewBookingModal()" data-t="btn_new_svc">+ طلب خدمة</button>
   </div>
 </nav>
 
@@ -197,9 +197,9 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
     <div class="conv-list" id="convList">
       <div style="padding:28px;text-align:center;color:var(--g500)">
         <div style="font-size:40px;margin-bottom:10px">💬</div>
-        <p style="font-size:13px">لا توجد محادثات بعد</p>
+        <p style="font-size:13px" data-t="chat_empty">لا توجد محادثات بعد</p>
         <br>
-        <a href="providers.html" class="btn btn-p btn-sm">ابحث عن مرشد</a>
+        <a href="providers.html" class="btn btn-p btn-sm" data-t="chat_find_guide">ابحث عن مرشد</a>
       </div>
     </div>
   </div>
@@ -211,8 +211,8 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
     <div class="chat-empty" id="chatEmpty">
       <div class="ei">💬</div>
       <h3 style="font-size:17px;font-weight:700;color:var(--g700)">اختر محادثة</h3>
-      <p style="font-size:13px;text-align:center">اختر محادثة من القائمة أو ابدأ حجزاً جديداً</p>
-      <button class="btn btn-p" onclick="openNewBookingModal()">+ طلب خدمة جديد</button>
+      <p style="font-size:13px;text-align:center" data-t="chat_select">اختر محادثة من القائمة أو ابدأ حجزاً جديداً</p>
+      <button class="btn btn-p" onclick="openNewBookingModal()" data-t="btn_new_svc">+ طلب خدمة جديد</button>
     </div>
 
     <!-- Active -->
@@ -222,8 +222,8 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
       <div class="chat-header">
         <div class="ch-av" id="chAv">م<div class="online-dot"></div></div>
         <div class="ch-info">
-          <div class="ch-name" id="chName">المُقدم</div>
-          <div class="ch-status" id="chStatus">● متاح الآن</div>
+          <div class="ch-name" id="chName" data-t="provider_label">المُقدم</div>
+          <div class="ch-status" id="chStatus" data-t="available_now">● متاح الآن</div>
         </div>
         <div class="ch-actions">
           <button class="icon-btn" onclick="openBookingForCurrent()" title="طلب خدمة">📋</button>
@@ -234,26 +234,26 @@ body{font-family:"Tajawal",sans-serif;background:var(--g50);color:var(--navy);di
       <!-- Active Booking Banner -->
       <div id="bookingBanner" style="display:none" class="booking-banner">
         <div class="bb-text">
-          <b id="bannerSvc">طلب خدمة</b> — <span id="bannerStatus">قيد الانتظار</span>
+          <b id="bannerSvc" data-t="chat_booking_req">طلب خدمة</b> — <span id="bannerStatus" data-t="status_waiting">قيد الانتظار</span>
           <small id="bannerDetail">—</small>
         </div>
-        <button class="btn btn-p btn-sm" onclick="showBookingDetails()">تفاصيل</button>
+        <button class="btn btn-p btn-sm" onclick="showBookingDetails()" data-t="btn_details">تفاصيل</button>
       </div>
 
       <!-- TRIP CODE (shown when booking is confirmed) -->
       <div id="tripCodeSection" style="display:none" class="trip-code-banner">
-        <div class="tcb-title">🔒 كود الرحلة الخاص بك</div>
+        <div class="tcb-title" data-t="trip_code_title">🔒 كود الرحلة الخاص بك</div>
         <div class="tcb-code" id="tcbCode">——</div>
         <div id="tcbLocked">
           <div class="tcb-locked">
-            <span class="tcb-locked-text">🔒 الكود مقفل — شاركه مع المُقدم فقط بعد وصوله إليك</span>
+            <span class="tcb-locked-text" data-t="trip_code_hint">🔒 الكود مقفل — شاركه مع المُقدم فقط بعد وصوله إليك</span>
           </div>
-          <div class="tcb-hint">عند وصول المُقدم سيطلب منك هذا الكود لبدء الرحلة</div>
+          <div class="tcb-hint" data-t="trip_code_inst">عند وصول المُقدم سيطلب منك هذا الكود لبدء الرحلة</div>
         </div>
         <div id="tcbUnlocked" style="display:none">
           <div style="text-align:center;margin-top:8px">
-            <div style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:6px">✅ أعطِ هذا الكود للمُقدم لبدء الرحلة</div>
-            <button class="tcb-share-btn" onclick="shareCode()">📤 مشاركة الكود</button>
+            <div style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:6px" data-t="code_unlocked_msg">✅ أعطِ هذا الكود للمُقدم لبدء الرحلة</div>
+            <button class="tcb-share-btn" onclick="shareCode()" data-t="btn_share_code">📤 مشاركة الكود</button>
           </div>
         </div>
       </div>
@@ -358,7 +358,7 @@ function renderConvList(){
   const provs = PROVIDERS.filter(p=>CHATS[p.id]&&(!filter||p.name.includes(filter)));
   document.getElementById("convCount").textContent = provs.length+" محادثة";
   if(!provs.length){
-    cont.innerHTML=`<div style="padding:24px;text-align:center;color:var(--g500)"><div style="font-size:38px;margin-bottom:9px">💬</div><p style="font-size:13px">لا توجد محادثات</p><br><a href="providers.html" class="btn btn-p btn-sm">ابحث عن مرشد</a></div>`;
+    cont.innerHTML=`<div style="padding:24px;text-align:center;color:var(--g500)"><div style="font-size:38px;margin-bottom:9px">💬</div><p style="font-size:13px">لا توجد محادثات</p><br><a href="providers.html" class="btn btn-p btn-sm" data-t="chat_find_guide">ابحث عن مرشد</a></div>`;
     return;
   }
   cont.innerHTML = provs.map(p=>{
@@ -397,7 +397,7 @@ function openConv(pid, bkId){
   document.getElementById("chAv").innerHTML = p.name.slice(0,2) + (["p1","p2","p4"].includes(pid)?'<div class="online-dot"></div>':"");
   document.getElementById("chName").textContent = p.name;
   document.getElementById("chStatus").innerHTML = ["p1","p2","p4"].includes(pid)?
-    '<span style="color:var(--green)">● متاح الآن</span>':
+    '<span style="color:var(--green)" data-t="available_now">● متاح الآن</span>':
     '<span style="color:var(--g500)">○ غير متاح حالياً</span>';
 
   // Booking banner
