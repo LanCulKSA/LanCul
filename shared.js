@@ -241,7 +241,7 @@ function openBooking(providerId) {
   o.innerHTML = `
     <div class="modal">
       <div class="mhead">
-        <h2>احجز مع ${p.name}</h2>
+        <h2>${t('book_now')||'Book with'} ${currentLang!=='ar'&&p.nameEn?p.nameEn:p.name}</h2>
         <button class="close-btn" onclick="closeModal()">×</button>
       </div>
       <!-- Provider summary -->
@@ -392,8 +392,9 @@ function openAuth(mode = 'login') {
   closeModal();
   const o = document.createElement('div');
   o.className = 'overlay';
+  const title = mode==='login' ? (t('nav_login')||'Login') : (t('nav_signup')||'Sign Up');
   o.innerHTML = `<div class="modal" style="max-width:480px">
-    <div class="mhead"><h2>${mode==='login'?'تسجيل الدخول':'إنشاء حساب'}</h2><button class="close-btn" onclick="closeModal()">×</button></div>
+    <div class="mhead"><h2>${title}</h2><button class="close-btn" onclick="closeModal()">×</button></div>
     ${mode==='signup'?`
     <div style="margin-bottom:14px">
       <div style="font-size:12px;font-weight:700;color:#7B82A0;text-transform:uppercase;margin-bottom:8px">نوع الحساب</div>
@@ -423,7 +424,7 @@ function selRole(r) {
 async function doAuth(mode) {
   const email = document.getElementById('authEmail')?.value?.trim();
   const pass  = document.getElementById('authPass')?.value;
-  if (!email || !pass) { toast('يرجى تعبئة جميع الحقول', 'err'); return; }
+  if (!email || !pass) { toast(t('err_wrong_creds')||'Please fill all fields', 'err'); return; }
   const name = document.getElementById('authName')?.value || email.split('@')[0];
   const btn = document.querySelector('.overlay button[onclick]');
   if (btn) { btn.disabled = true; btn.textContent = 'جاري...'; }
@@ -440,7 +441,7 @@ async function doAuth(mode) {
     } else {
       // localStorage fallback
       setUser({ name, email, role: mode==='signup' ? (_selectedRole||'client') : 'client' });
-      toast('مرحباً ' + name + '! 🎉');
+      toast('Welcome ' + name + '! 🎉');
     }
     closeModal();
     setTimeout(() => {
