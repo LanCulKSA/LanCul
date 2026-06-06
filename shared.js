@@ -1,21 +1,9 @@
+/* =====================================================
+   LanCul — shared.js
+   Core data, utilities, auth modal, booking modal
+===================================================== */
 
-/* =============================================
-   LanCul Platform — Shared JS  v3
-   Trip Code System + Full Pricing
-============================================= */
-
-/* ── TRANSLATIONS (11 langs) ─────────────── */
-const LANG_FLAGS = {
-  'اليابانية':'🇯🇵','الصينية (الماندرين)':'🇨🇳','الفرنسية':'🇫🇷','الألمانية':'🇩🇪',
-  'الإسبانية':'🇪🇸','البرتغالية':'🇧🇷','الروسية':'🇷🇺','الإنجليزية':'🇬🇧',
-  'التايلاندية':'🇹🇭','الكورية':'🇰🇷','الإندونيسية':'🇮🇩','الماليزية':'🇲🇾',
-  'الإيطالية':'🇮🇹','التركية':'🇹🇷','الأوردية':'🇵🇰','الهندية':'🇮🇳',
-  'Japanese':'🇯🇵','Chinese':'🇨🇳','French':'🇫🇷','German':'🇩🇪','Spanish':'🇪🇸',
-  'Portuguese':'🇧🇷','Russian':'🇷🇺','English':'🇬🇧','Korean':'🇰🇷','Indonesian':'🇮🇩',
-  'Italian':'🇮🇹','Turkish':'🇹🇷',
-};
-
-/* ── PROVIDERS DATA (with 4-tier pricing) ──── */
+// ── PROVIDERS DATA ─────────────────────────────────
 const PROVIDERS = [
   {
     id:'p1', name:'م. سليمان الخطيب', nameEn:'Eng. Sulaiman Alkhateeb', city:'الرياض',
@@ -24,13 +12,7 @@ const PROVIDERS = [
     offers:['guiding','translation','experience'],
     rating:4.9, reviews:47, jobs:63, verified:true,
     bio:'مهندس نانو تكنولوجي، خبرة 12 عاماً في مرافقة الوفود الدولية',
-    // ── التسعير الكامل (4 خيارات) ──
-    pricing: {
-      hourly_no_car:  120,   // ساعة بدون سيارة (1-4 ساعات)
-      hourly_with_car: 160,  // ساعة مع سيارة (1-4 ساعات)
-      fullday_no_car:  650,  // يوم كامل بدون سيارة (>4 ساعات)
-      fullday_with_car: 800, // يوم كامل مع سيارة (>4 ساعات)
-    }
+    pricing:{ hourly_no_car:120, hourly_with_car:160, fullday_no_car:650, fullday_with_car:800 }
   },
   {
     id:'p2', name:'أ. فهد الهويمل', nameEn:'Fahad AlHuwaimel', city:'الرياض',
@@ -47,7 +29,7 @@ const PROVIDERS = [
     specializations:['هندسة حيوية','طب','علوم'],
     offers:['translation','guiding'],
     rating:4.7, reviews:28, jobs:35, verified:true,
-    bio:'ماجستير هندسة حيوية من اليابان، خبرة في المؤتمرات الطبية الدولية',
+    bio:'ماجستير هندسة حيوية من اليابان، خبرة في المؤتمرات الطبية',
     pricing:{ hourly_no_car:110, hourly_with_car:150, fullday_no_car:600, fullday_with_car:720 }
   },
   {
@@ -76,422 +58,379 @@ const PROVIDERS = [
     rating:5.0, reviews:89, jobs:120, verified:true,
     bio:'متخصصة مرافقة الحجاج والمعتمرين الجنوب آسيويين',
     pricing:{ hourly_no_car:80, hourly_with_car:110, fullday_no_car:450, fullday_with_car:560 }
-  },
+  }
 ];
 
-/* ── EXPERIENCES ────────────────────────── */
 const EXPERIENCES = [
-  {id:'e1',title:'حضور زفاف سعودي أصيل',titleEn:'Authentic Saudi Wedding',city:'الرياض',cat:'ثقافي',hours:4,price:350,emoji:'💍',grad:'linear-gradient(135deg,#2c1810,#8b4513)',pax:6},
-  {id:'e2',title:'جلسة صيد الصقور',titleEn:'Falconry Experience',city:'الرياض',cat:'تراث',hours:3,price:280,emoji:'🦅',grad:'linear-gradient(135deg,#1a2a4a,#2d4a7a)',pax:8},
-  {id:'e3',title:'طهي الكبسة مع عائلة سعودية',titleEn:'Cook Kabsa with a Family',city:'جدة',cat:'طعام',hours:2.5,price:200,emoji:'🍲',grad:'linear-gradient(135deg,#3d1a00,#8b4500)',pax:10},
-  {id:'e4',title:'رحلة الدرعية التاريخية',titleEn:'Diriyah Night Tour',city:'الرياض',cat:'تاريخي',hours:3,price:180,emoji:'🏰',grad:'linear-gradient(135deg,#1a1a2e,#16213e)',pax:12},
-  {id:'e5',title:'تجربة القهوة العربية',titleEn:'Arabic Coffee & Dates',city:'العُلا',cat:'ثقافي',hours:1.5,price:120,emoji:'☕',grad:'linear-gradient(135deg,#2e1a0e,#6b3a2a)',pax:15},
-  {id:'e6',title:'زيارة منزل سعودي تقليدي',titleEn:'Traditional Saudi Home Visit',city:'أبها',cat:'ثقافي',hours:2,price:160,emoji:'🏡',grad:'linear-gradient(135deg,#0d2e1a,#1a5e3a)',pax:8},
+  {id:'e1',title:'حضور زفاف سعودي أصيل',titleEn:'Authentic Saudi Wedding',city:'الرياض',cat:'ثقافي',hours:4,price:350,pax:6,emoji:'💍',grad:'linear-gradient(135deg,#2c1810,#8b4513)'},
+  {id:'e2',title:'جلسة صيد الصقور',titleEn:'Falconry Experience',city:'الرياض',cat:'تراث',hours:3,price:280,pax:8,emoji:'🦅',grad:'linear-gradient(135deg,#1a2a4a,#2d4a7a)'},
+  {id:'e3',title:'طهي الكبسة مع عائلة سعودية',titleEn:'Cook Kabsa with a Family',city:'جدة',cat:'طعام',hours:2.5,price:200,pax:10,emoji:'🍲',grad:'linear-gradient(135deg,#3d1a00,#8b4500)'},
+  {id:'e4',title:'رحلة الدرعية التاريخية',titleEn:'Diriyah Night Tour',city:'الرياض',cat:'تاريخي',hours:3,price:180,pax:12,emoji:'🏰',grad:'linear-gradient(135deg,#1a1a2e,#16213e)'},
+  {id:'e5',title:'تجربة القهوة العربية',titleEn:'Arabic Coffee & Dates',city:'العُلا',cat:'ثقافي',hours:1.5,price:120,pax:15,emoji:'☕',grad:'linear-gradient(135deg,#2e1a0e,#6b3a2a)'},
+  {id:'e6',title:'زيارة منزل سعودي تقليدي',titleEn:'Traditional Saudi Home Visit',city:'أبها',cat:'ثقافي',hours:2,price:160,pax:8,emoji:'🏡',grad:'linear-gradient(135deg,#0d2e1a,#1a5e3a)'}
 ];
 
-/* ── MARKETPLACE ────────────────────────── */
 const MARKETPLACE = [
-  {id:'m1',name:'مطعم نجد القديم',nameEn:'Old Najd Restaurant',cat:'restaurant',city:'الرياض',desc:'أكلات نجدية أصيلة',emoji:'🍽️',range:'mid',langs:['EN','JA','ZH'],featured:true},
-  {id:'m2',name:'مقهى الرياض الأصيل',nameEn:'Authentic Riyadh Cafe',cat:'cafe',city:'الرياض',desc:'قهوة عربية وأجواء هادئة',emoji:'☕',range:'budget',langs:['EN','FR'],featured:false},
-  {id:'m3',name:'تجربة الرماية التقليدية',nameEn:'Traditional Archery',cat:'activity',city:'الرياض',desc:'تعلم فن الرماية بالقوس والنشاب',emoji:'🏹',range:'mid',langs:['EN','JA'],featured:true},
-  {id:'m4',name:'ملحمة الشاوية',nameEn:'Al-Shawiya Grill',cat:'restaurant',city:'جدة',desc:'أشهى لحوم الضأن والإبل',emoji:'🥩',range:'mid',langs:['EN'],featured:false},
+  {id:'m1',name:'مطعم نجد القديم',nameEn:'Old Najd Restaurant',cat:'restaurant',city:'الرياض',desc:'أكلات نجدية أصيلة',emoji:'🍽️',langs:['EN','JA','ZH'],featured:true},
+  {id:'m2',name:'مقهى الرياض الأصيل',nameEn:'Authentic Riyadh Cafe',cat:'cafe',city:'الرياض',desc:'قهوة عربية وأجواء هادئة',emoji:'☕',langs:['EN','FR'],featured:false},
+  {id:'m3',name:'تجربة الرماية التقليدية',nameEn:'Traditional Archery',cat:'activity',city:'الرياض',desc:'تعلم فن الرماية بالقوس',emoji:'🏹',langs:['EN','JA'],featured:true},
+  {id:'m4',name:'ملحمة الشاوية',nameEn:'Al-Shawiya Grill',cat:'restaurant',city:'جدة',desc:'أشهى لحوم الضأن والإبل',emoji:'🥩',langs:['EN'],featured:false}
 ];
 
-/* ═══════════════════════════════════════════
-   PRICING CALCULATOR
-═══════════════════════════════════════════ */
-function calcPrice(provider, hours, withCar) {
-  const pr = provider.pricing;
-  const isFullDay = hours > 4;
+const LANG_FLAGS = {
+  'اليابانية':'🇯🇵','الصينية (الماندرين)':'🇨🇳','الفرنسية':'🇫🇷',
+  'الألمانية':'🇩🇪','الإسبانية':'🇪🇸','البرتغالية':'🇧🇷',
+  'الإنجليزية':'🇬🇧','الروسية':'🇷🇺','الكورية':'🇰🇷',
+  'الإيطالية':'🇮🇹','الإندونيسية':'🇮🇩','الماليزية':'🇲🇾',
+  'التركية':'🇹🇷','الهندية':'🇮🇳','التايلاندية':'🇹🇭'
+};
+
+// ── PRICE CALCULATION ───────────────────────────────
+function calcPrice(p, hours, withCar) {
+  if (!p || !p.pricing) return 0;
+  var isFullDay = parseFloat(hours) > 4;
   if (isFullDay) {
-    return withCar ? pr.fullday_with_car : pr.fullday_no_car;
+    return withCar ? p.pricing.fullday_with_car : p.pricing.fullday_no_car;
   } else {
-    const rate = withCar ? pr.hourly_with_car : pr.hourly_no_car;
-    return rate * hours;
+    var rate = withCar ? p.pricing.hourly_with_car : p.pricing.hourly_no_car;
+    return rate * parseFloat(hours);
   }
 }
 
-function getPriceLabel(provider, hours, withCar) {
-  const pr = provider.pricing;
-  const isFullDay = hours > 4;
-  if (isFullDay) {
-    const price = withCar ? pr.fullday_with_car : pr.fullday_no_car;
-    return `يوم كامل ${withCar?"مع سيارة":"بدون سيارة"}: ${price} ر.س`;
-  } else {
-    const rate = withCar ? pr.hourly_with_car : pr.hourly_no_car;
-    return `${rate} ر.س/ساعة ${withCar?"مع سيارة":"بدون سيارة"} × ${hours}س = ${rate*hours} ر.س`;
-  }
+// ── BOOKINGS (localStorage) ─────────────────────────
+function getBookings() {
+  try { return JSON.parse(localStorage.getItem('lancul_bookings') || '[]'); } catch(e) { return []; }
 }
-
-/* ═══════════════════════════════════════════
-   TRIP CODE SYSTEM
-═══════════════════════════════════════════ */
-function generateTripCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+function saveBooking(bk) {
+  var bks = getBookings();
+  bks.push(bk);
+  localStorage.setItem('lancul_bookings', JSON.stringify(bks));
+  return bk;
 }
-
-// Client gets code when booking is CONFIRMED
-// Code is LOCKED — client can only share after provider physically arrives
-// Provider enters code → trip starts → billing begins
-
-function lockCode(bookingId) {
-  // code exists but client can't share it
-  const bks = getBookings();
-  const bk = bks.find(b => b.id === bookingId);
-  return bk?.tripCode || null;
+function updateBookingStatus(id, status) {
+  var bks = getBookings();
+  var bk = bks.find(function(b){ return b.id === id; });
+  if (bk) { bk.status = status; localStorage.setItem('lancul_bookings', JSON.stringify(bks)); }
+  return bk;
 }
-
-function unlockCode(bookingId) {
-  // called when provider marks "وصلت" — unlocks sharing for client
-  const bks = getBookings();
-  const bk = bks.find(b => b.id === bookingId);
-  if (bk) {
-    bk.codeUnlocked = true;
-    bk.arrivalTime = new Date().toISOString();
-    localStorage.setItem('lancul_bookings', JSON.stringify(bks));
-  }
-}
-
-function verifyTripCode(bookingId, enteredCode) {
-  const bks = getBookings();
-  const bk = bks.find(b => b.id === bookingId);
-  if (!bk || bk.tripCode !== enteredCode) return false;
+function verifyTripCode(bookingId, code) {
+  var bks = getBookings();
+  var bk = bks.find(function(b){ return b.id === bookingId; });
+  if (!bk || bk.tripCode !== code) return false;
   bk.status = 'active';
-  bk.tripStarted = new Date().toISOString();
+  bk.codeUnlocked = true;
   localStorage.setItem('lancul_bookings', JSON.stringify(bks));
   return true;
 }
 
-/* ═══════════════════════════════════════════
-   localStorage HELPERS
-═══════════════════════════════════════════ */
-function getBookings() {
-  try { return JSON.parse(localStorage.getItem('lancul_bookings') || '[]'); } catch { return []; }
-}
-function saveBooking(b) {
-  const all = getBookings();
-  b.id = 'bk_' + Date.now();
-  b.status = 'pending';
-  b.createdAt = new Date().toISOString();
-  all.unshift(b);
-  localStorage.setItem('lancul_bookings', JSON.stringify(all));
-  // Auto-open chat for this booking
-  openChatForBooking(b.id, b.providerId);
-  return b;
-}
-
-function openChatForBooking(bookingId, providerId) {
-  // Initialize chat channel if doesn't exist
-  const chats = JSON.parse(localStorage.getItem('lc_chats') || '{}');
-  if (!chats[providerId]) {
-    const p = PROVIDERS.find(x => x.id === providerId);
-    chats[providerId] = [{
-      id: Date.now(),
-      mine: false,
-      text: `مرحباً! وصلني طلب الحجز 📋 سأتواصل معك قريباً لتأكيد التفاصيل.`,
-      time: new Date().toLocaleTimeString('ar', {hour:'2-digit', minute:'2-digit'}),
-      bookingId: bookingId,
-      read: false
-    }];
-    localStorage.setItem('lc_chats', JSON.stringify(chats));
-  }
-}
-
+// ── RFQs (localStorage) ────────────────────────────
 function getRFQs() {
-  try { return JSON.parse(localStorage.getItem('lancul_rfqs') || '[]'); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem('lancul_rfqs') || '[]'); } catch(e) { return []; }
 }
 function saveRFQ(rfq) {
-  const all = getRFQs();
-  rfq.id = 'rfq_' + Date.now();
-  rfq.status = 'new';
-  rfq.createdAt = new Date().toISOString();
-  rfq.bids = [];
-  all.unshift(rfq);
-  localStorage.setItem('lancul_rfqs', JSON.stringify(all));
+  var rfqs = getRFQs();
+  rfqs.push(rfq);
+  localStorage.setItem('lancul_rfqs', JSON.stringify(rfqs));
   return rfq;
 }
 function updateRFQ(id, updates) {
-  const all = getRFQs();
-  const idx = all.findIndex(r => r.id === id);
-  if (idx > -1) { all[idx] = { ...all[idx], ...updates }; localStorage.setItem('lancul_rfqs', JSON.stringify(all)); }
+  var rfqs = getRFQs();
+  var rfq = rfqs.find(function(r){ return r.id === id; });
+  if (rfq) { Object.assign(rfq, updates); localStorage.setItem('lancul_rfqs', JSON.stringify(rfqs)); }
 }
 
+// ── USER SESSION ────────────────────────────────────
 function getUser() {
-  try { return JSON.parse(localStorage.getItem('lancul_user') || 'null'); } catch { return null; }
+  try { return JSON.parse(localStorage.getItem('lancul_user') || 'null'); } catch(e) { return null; }
 }
-function setUser(u) { localStorage.setItem('lancul_user', JSON.stringify(u)); }
-function logout() { localStorage.removeItem('lancul_user'); }
-
-// Admin password — STANDALONE (no dependency on shared load order)
-const ADMIN_PASS_KEY = 'lc_admin_pass';
-function getAdminPass() { return localStorage.getItem(ADMIN_PASS_KEY) || 'lancul2026'; }
-function setAdminPass(p) { localStorage.setItem(ADMIN_PASS_KEY, p); }
-
-/* ═══════════════════════════════════════════
-   BOOKING MODAL — with 4-tier pricing
-═══════════════════════════════════════════ */
-let _bkCar = true;
-
-function openBooking(providerId) {
-  const p = PROVIDERS.find(x => x.id === providerId);
-  if (!p) return;
-  closeModal();
-  const o = document.createElement('div');
-  o.className = 'overlay';
-  o.innerHTML = `
-    <div class="modal">
-      <div class="mhead">
-        <h2>${t('book_now')||'Book with'} ${currentLang!=='ar'&&p.nameEn?p.nameEn:p.name}</h2>
-        <button class="close-btn" onclick="closeModal()">×</button>
-      </div>
-      <!-- Provider summary -->
-      <div style="background:linear-gradient(135deg,#0D1B3E,#162654);border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center;margin-bottom:16px">
-        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#E8506A,#F5863E);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:white;flex-shrink:0">${p.name.slice(0,2)}</div>
-        <div style="flex:1"><div style="color:white;font-weight:700">${p.name}</div><div style="color:#C5C9D6;font-size:12px">${p.languages.join(' · ')}</div></div>
-        <div style="background:rgba(245,200,66,.15);color:#F5C842;padding:3px 9px;border-radius:16px;font-size:13px;font-weight:700">★ ${p.rating}</div>
-      </div>
-
-      <!-- Service type -->
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7B82A0;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">نوع الخدمة</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          ${p.offers.map(s => `
-            <div class="svc-opt ${s==='guiding'?'on':''}" id="so_${s}" onclick="selectSvc_bk('${s}')"
-              style="border:1.5px solid ${s==='guiding'?'#E8506A':'#EEF0F7'};background:${s==='guiding'?'rgba(232,80,106,.06)':'white'};border-radius:10px;padding:12px;cursor:pointer;text-align:center;transition:all .2s">
-              <div style="font-size:22px;margin-bottom:5px">${{guiding:'🗺️',translation:'🌐',airport:'✈️',experience:'⭐'}[s]}</div>
-              <div style="font-size:13px;font-weight:600;color:${s==='guiding'?'#E8506A':'#0D1B3E'}">${{guiding:'مرشد سياحي',translation:'ترجمة',airport:'مطار',experience:'تجربة'}[s]}</div>
-            </div>`).join('')}
-        </div>
-      </div>
-
-      <!-- Car toggle -->
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7B82A0;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:8px">مع سيارة؟</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div id="bk_car_yes" onclick="setBkCar(true)" style="border:1.5px solid #E8506A;background:rgba(232,80,106,.06);border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;color:#E8506A">🚗 مع سيارة</div>
-          <div id="bk_car_no" onclick="setBkCar(false)" style="border:1.5px solid #EEF0F7;background:white;border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-size:14px;font-weight:600;color:#3D4466">🚶 بدون سيارة</div>
-        </div>
-      </div>
-
-      <!-- Date/Time -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-        <div>
-          <label style="font-size:12px;font-weight:700;color:#7B82A0;display:block;margin-bottom:5px">التاريخ</label>
-          <input type="date" id="bkDate" min="${__import__builtins.get('datetime', lambda: None)() or ''}" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:9px 12px;font-family:'Tajawal',sans-serif;font-size:14px;outline:none">
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:700;color:#7B82A0;display:block;margin-bottom:5px">الوقت</label>
-          <input type="time" id="bkTime" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:9px 12px;font-family:'Tajawal',sans-serif;font-size:14px;outline:none">
-        </div>
-      </div>
-
-      <!-- Duration slider -->
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7B82A0;display:block;margin-bottom:5px">المدة: <span id="bkHrsLbl" style="color:#E8506A">2 ساعة</span></label>
-        <input type="range" min="1" max="12" step="0.5" value="2" id="bkHrs"
-          style="width:100%;accent-color:#E8506A"
-          oninput="updateBkPrice('${p.id}')">
-        <div id="bkFullDayNote" style="font-size:11px;color:#F5863E;margin-top:4px"></div>
-      </div>
-
-      <!-- Price breakdown -->
-      <div id="bkPriceBox" style="background:#F8F9FC;border-radius:10px;padding:14px;margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#7B82A0" id="bkRow1"></div>
-        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid #EEF0F7;margin-top:8px;padding-top:10px">
-          <span>الإجمالي</span><span style="color:#E8506A" id="bkTotal">—</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:14px">
-        <label style="font-size:12px;font-weight:700;color:#7B82A0;display:block;margin-bottom:5px">ملاحظات</label>
-        <textarea id="bkNotes" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:9px 12px;font-family:'Tajawal',sans-serif;font-size:13px;resize:none;outline:none;min-height:60px" placeholder="أي متطلبات خاصة..."></textarea>
-      </div>
-
-      <button class="btn-p-full" onclick="confirmBooking_new('${p.id}')"
-        style="width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:12px;padding:14px;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;cursor:pointer">
-        ✅ تأكيد الحجز وفتح قناة التواصل
-      </button>
-    </div>`;
-  document.body.appendChild(o);
-  o.addEventListener('click', e => { if (e.target === o) closeModal(); });
-  _bkCar = true;
-  _selectedSvc_bk = p.offers[0] || 'guiding';
-  updateBkPrice(p.id);
+function setUser(u) {
+  localStorage.setItem('lancul_user', JSON.stringify(u));
+}
+function logout() {
+  localStorage.removeItem('lancul_user');
+}
+function getAdminPass() {
+  return localStorage.getItem('lancul_admin_pass') || 'lancul2026';
 }
 
-let _selectedSvc_bk = 'guiding';
-function selectSvc_bk(s) {
-  _selectedSvc_bk = s;
-  document.querySelectorAll('.svc-opt').forEach(el => {
-    const id = el.id.replace('so_', '');
-    el.style.borderColor = id === s ? '#E8506A' : '#EEF0F7';
-    el.style.background = id === s ? 'rgba(232,80,106,.06)' : 'white';
-    el.querySelector('div:last-child').style.color = id === s ? '#E8506A' : '#0D1B3E';
-  });
-}
-
-function setBkCar(v) {
-  _bkCar = v;
-  const yes = document.getElementById('bk_car_yes');
-  const no  = document.getElementById('bk_car_no');
-  if (yes) { yes.style.borderColor = v ? '#E8506A' : '#EEF0F7'; yes.style.background = v ? 'rgba(232,80,106,.06)' : 'white'; yes.style.color = v ? '#E8506A' : '#3D4466'; }
-  if (no)  { no.style.borderColor  = !v ? '#E8506A' : '#EEF0F7'; no.style.background  = !v ? 'rgba(232,80,106,.06)' : 'white'; no.style.color  = !v ? '#E8506A' : '#3D4466'; }
-  const pid = document.querySelector('.modal h2')?.textContent?.split('مع ')[1] || '';
-  // find provider by name
-  const p = PROVIDERS.find(x => document.querySelector('.modal h2')?.textContent?.includes(x.name.split('.')[1]?.trim() || x.name));
-  if (p) updateBkPrice(p.id);
-}
-
-function updateBkPrice(pid) {
-  const p = PROVIDERS.find(x => x.id === pid);
-  if (!p) return;
-  const hrs = parseFloat(document.getElementById('bkHrs')?.value || 2);
-  const isFullDay = hrs > 4;
-  const price = calcPrice(p, hrs, _bkCar);
-  const lbl = document.getElementById('bkHrsLbl');
-  const note = document.getElementById('bkFullDayNote');
-  const row1 = document.getElementById('bkRow1');
-  const tot = document.getElementById('bkTotal');
-  if (lbl) lbl.textContent = isFullDay ? 'يوم كامل' : hrs + ' ساعة';
-  if (note) note.textContent = isFullDay ? '⚡ تجاوزت 4 ساعات — سيطبق سعر اليوم الكامل' : '';
-  if (row1) {
-    const pr = p.pricing;
-    const rate = _bkCar ? (isFullDay ? pr.fullday_with_car : pr.hourly_with_car) : (isFullDay ? pr.fullday_no_car : pr.hourly_no_car);
-    row1.innerHTML = `<span>${isFullDay ? 'يوم كامل' : hrs+'س × '+( _bkCar ? pr.hourly_with_car : pr.hourly_no_car)+' ر.س'}</span><span>${price} ر.س</span>`;
+// ── TOAST ───────────────────────────────────────────
+function toast(msg, type) {
+  type = type || 'ok';
+  var wrap = document.getElementById('tw');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'tw';
+    wrap.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;width:calc(100% - 32px);max-width:360px;display:flex;flex-direction:column;gap:6px;pointer-events:none;';
+    document.body.appendChild(wrap);
   }
-  if (tot) tot.textContent = price + ' ر.س';
+  var el = document.createElement('div');
+  el.style.cssText = 'background:#0D1B3E;color:white;padding:10px 15px;border-radius:10px;font-size:13px;box-shadow:0 6px 28px rgba(0,0,0,.4);animation:su .3s;border-right:4px solid ' + (type === 'err' ? '#E8506A' : '#2ECC8E');
+  el.textContent = (type === 'err' ? '❌ ' : '✅ ') + msg;
+  wrap.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 3200);
 }
 
-function confirmBooking_new(pid) {
-  const user = getUser();
-  if (!user) { closeModal(); openAuth('login'); return; }
-  const date = document.getElementById('bkDate')?.value;
-  const time = document.getElementById('bkTime')?.value;
-  if (!date || !time) { toast('اختر التاريخ والوقت', 'err'); return; }
-  const p = PROVIDERS.find(x => x.id === pid);
-  const hrs = parseFloat(document.getElementById('bkHrs')?.value || 2);
-  const total = calcPrice(p, hrs, _bkCar);
-  const bk = {
-    providerId: pid, providerName: p.name,
-    service: _selectedSvc_bk, date, time, hours: hrs, withCar: _bkCar,
-    notes: document.getElementById('bkNotes')?.value || '',
-    total, clientName: user.name, clientEmail: user.email,
-    city: 'الرياض', priceLabel: getPriceLabel(p, hrs, _bkCar)
-  };
-  const saved = saveBooking(bk);
-  closeModal();
-  toast('تم الحجز ✅ فُتحت قناة التواصل مع ' + p.name);
-  // redirect to chat
-  setTimeout(() => { window.location.href = 'chat.html?provider=' + pid + '&booking=' + saved.id; }, 1200);
+// ── CLOSE MODAL ─────────────────────────────────────
+function closeModal() {
+  var o = document.querySelector('.overlay');
+  if (o) o.remove();
 }
 
-/* ═══════════════════════════════════════════
-   AUTH
-═══════════════════════════════════════════ */
-function openAuth(mode = 'login') {
+// ── AUTH MODAL ──────────────────────────────────────
+var _selectedRole = 'client';
+
+function selRole(role) {
+  _selectedRole = role;
+  var cc = document.getElementById('roleClient');
+  var cp = document.getElementById('roleProvider');
+  if (cc) cc.classList.toggle('on', role === 'client');
+  if (cp) cp.classList.toggle('on', role === 'provider');
+}
+
+function openAuth(mode) {
+  mode = mode || 'login';
   closeModal();
-  const o = document.createElement('div');
+
+  var isLogin  = mode === 'login';
+  var title    = isLogin ? (t('nav_login') || 'Login') : (t('nav_signup') || 'Sign Up');
+  var btnLabel = isLogin ? (t('btn_login') || 'Login') : (t('btn_create_acc') || 'Create Account');
+
+  var o = document.createElement('div');
   o.className = 'overlay';
-  const title = mode==='login' ? (t('nav_login')||'Login') : (t('nav_signup')||'Sign Up');
-  o.innerHTML = `<div class="modal" style="max-width:480px">
-    <div class="mhead"><h2>${title}</h2><button class="close-btn" onclick="closeModal()">×</button></div>
-    ${mode==='signup'?`
-    <div style="margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;color:#7B82A0;text-transform:uppercase;margin-bottom:8px">نوع الحساب</div>
-      <div style="display:flex;gap:10px">
-        <label class="cbchip on" id="roleClient" onclick="selRole('client')" style="flex:1;display:flex;align-items:center;gap:7px;padding:10px 14px;border:1.5px solid #E8506A;border-radius:10px;background:rgba(232,80,106,.06);cursor:pointer;font-size:13px;color:#E8506A">🌍 عميل / سائح</label>
-        <label class="cbchip" id="roleProvider" onclick="selRole('provider')" style="flex:1;display:flex;align-items:center;gap:7px;padding:10px 14px;border:1.5px solid #EEF0F7;border-radius:10px;cursor:pointer;font-size:13px">🎯 مُقدم خدمة</label>
-      </div>
-    </div>
-    <div style="margin-bottom:12px"><label style="font-size:13px;font-weight:600;color:#3D4466;display:block;margin-bottom:5px">الاسم الكامل</label><input style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 12px;font-family:'Tajawal',sans-serif;font-size:14px;outline:none" id="authName"></div>`:``}
-    <div style="margin-bottom:12px"><label style="font-size:13px;font-weight:600;color:#3D4466;display:block;margin-bottom:5px">البريد الإلكتروني</label><input style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 12px;font-family:'Tajawal',sans-serif;font-size:14px;outline:none;direction:ltr" type="email" id="authEmail" placeholder="you@email.com"></div>
-    <div style="margin-bottom:16px"><label style="font-size:13px;font-weight:600;color:#3D4466;display:block;margin-bottom:5px">كلمة المرور</label><input style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 12px;font-family:'Tajawal',sans-serif;font-size:14px;outline:none" type="password" id="authPass"></div>
-    <button onclick="doAuth('${mode}')" style="width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:12px;padding:13px;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;cursor:pointer">
-      ${mode==='login'?'دخول':'إنشاء الحساب'}
-    </button>
-  </div>`;
+
+  var signupExtra = '';
+  if (!isLogin) {
+    signupExtra = '<div style="margin-bottom:14px">'
+      + '<div style="font-size:12px;font-weight:700;color:#7B82A0;text-transform:uppercase;margin-bottom:8px">' + (t('account_type') || 'Account Type') + '</div>'
+      + '<div style="display:flex;gap:10px">'
+      + '<label class="cbchip on" id="roleClient" onclick="selRole(\'client\')" style="flex:1;display:flex;align-items:center;gap:7px;padding:10px 14px;border:1.5px solid #E8506A;border-radius:10px;background:rgba(232,80,106,.06);cursor:pointer;font-size:13px;color:#E8506A">🌍 ' + (t('role_client') || 'Client') + '</label>'
+      + '<label class="cbchip" id="roleProvider" onclick="selRole(\'provider\')" style="flex:1;display:flex;align-items:center;gap:7px;padding:10px 14px;border:1.5px solid #EEF0F7;border-radius:10px;cursor:pointer;font-size:13px;color:#3D4466">🎯 ' + (t('provider_label') || 'Provider') + '</label>'
+      + '</div></div>';
+  }
+
+  var nameField = isLogin ? '' : '<div style="margin-bottom:14px">'
+    + '<label style="font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px">' + (t('lbl_full_name') || 'Full Name') + '</label>'
+    + '<input id="authName" type="text" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none" placeholder="' + (t('lbl_full_name') || 'Your Name') + '">'
+    + '</div>';
+
+  o.innerHTML = '<div class="modal" style="max-width:480px">'
+    + '<div class="mhead"><h2>' + title + '</h2><button class="close-btn" onclick="closeModal()">×</button></div>'
+    + signupExtra
+    + nameField
+    + '<div style="margin-bottom:14px">'
+    + '<label style="font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px">' + (t('lbl_email') || 'Email') + '</label>'
+    + '<input id="authEmail" type="email" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none;direction:ltr" placeholder="you@email.com">'
+    + '</div>'
+    + '<div style="margin-bottom:18px">'
+    + '<label style="font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px">' + (t('lbl_password') || 'Password') + '</label>'
+    + '<input id="authPass" type="password" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none" onkeydown="if(event.key===\'Enter\')doAuth(\'' + mode + '\')">'
+    + '</div>'
+    + '<button onclick="doAuth(\'' + mode + '\')" style="width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:10px;padding:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">' + btnLabel + '</button>'
+    + '<div style="text-align:center;margin-top:12px;font-size:12px;color:#7B82A0">'
+    + (isLogin
+        ? '<button onclick="openAuth(\'signup\')" style="background:none;border:none;color:#E8506A;cursor:pointer;font-family:inherit;font-size:12px">' + (t('nav_signup') || 'Sign Up') + '</button>'
+        : '<button onclick="openAuth(\'login\')" style="background:none;border:none;color:#E8506A;cursor:pointer;font-family:inherit;font-size:12px">' + (t('nav_login') || 'Login') + '</button>')
+    + '</div>'
+    + '</div>';
+
   document.body.appendChild(o);
-  o.addEventListener('click', e => { if (e.target === o) closeModal(); });
+  o.addEventListener('click', function(e){ if (e.target === o) closeModal(); });
+
+  // Focus first input
+  setTimeout(function(){
+    var f = o.querySelector('input');
+    if (f) f.focus();
+  }, 100);
 }
 
-let _selectedRole = 'client';
-function selRole(r) {
-  _selectedRole = r;
-  document.getElementById('roleClient')?.style && (document.getElementById('roleClient').style.borderColor = r==='client'?'#E8506A':'#EEF0F7');
-  document.getElementById('roleProvider')?.style && (document.getElementById('roleProvider').style.borderColor = r==='provider'?'#E8506A':'#EEF0F7');
-}
-
+// ── SIGN UP / LOGIN ─────────────────────────────────
 async function doAuth(mode) {
-  const email = document.getElementById('authEmail')?.value?.trim();
-  const pass  = document.getElementById('authPass')?.value;
-  if (!email || !pass) { toast(t('err_wrong_creds')||'Please fill all fields', 'err'); return; }
-  const name = document.getElementById('authName')?.value || email.split('@')[0];
-  const btn = document.querySelector('.overlay button[onclick]');
-  if (btn) { btn.disabled = true; btn.textContent = 'جاري...'; }
+  var email = document.getElementById('authEmail') ? document.getElementById('authEmail').value.trim() : '';
+  var pass  = document.getElementById('authPass')  ? document.getElementById('authPass').value : '';
+  if (!email || !pass) { toast(t('err_fill_all') || 'Please fill all fields', 'err'); return; }
+
+  var btn = document.querySelector('.overlay button[onclick^="doAuth"]');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
   try {
     if (window.db && window._sb) {
-      // Supabase auth
       if (mode === 'signup') {
+        var name = document.getElementById('authName') ? document.getElementById('authName').value.trim() : email.split('@')[0];
         await window.db.signUp(email, pass, name, _selectedRole || 'client');
-        toast('✅ تم إنشاء حسابك! تحقق من بريدك');
+        toast(t('signup_success') || 'Account created! Check your email ✅');
       } else {
         await window.db.signIn(email, pass);
-        toast('مرحباً! 🎉');
+        toast('Welcome back! 🎉');
       }
     } else {
       // localStorage fallback
-      setUser({ name, email, role: mode==='signup' ? (_selectedRole||'client') : 'client' });
-      toast('Welcome ' + name + '! 🎉');
+      var name2 = (document.getElementById('authName') && document.getElementById('authName').value.trim()) || email.split('@')[0];
+      setUser({ name: name2, email: email, role: mode==='signup' ? (_selectedRole||'client') : 'client' });
+      toast('Welcome ' + name2 + '! 🎉');
     }
     closeModal();
-    setTimeout(() => {
+    setTimeout(function(){
       if (typeof initNav === 'function') initNav();
       if (typeof initDash === 'function') initDash();
-      else location.reload();
-    }, 500);
+    }, 400);
   } catch(err) {
-    const msg = err.message?.includes('Invalid') ? 'بريد أو كلمة مرور خاطئة' : (err.message || 'حدث خطأ');
+    var msg = (err.message && err.message.indexOf('Invalid') > -1)
+      ? (t('err_wrong_creds') || 'Invalid email or password')
+      : (err.message || 'Error occurred');
     toast(msg, 'err');
-    if (btn) { btn.disabled = false; btn.textContent = mode==='login' ? 'دخول' : 'إنشاء الحساب'; }
+    if (btn) { btn.disabled = false; btn.textContent = mode==='login'?(t('btn_login')||'Login'):(t('btn_create_acc')||'Sign Up'); }
   }
 }
 
-function doLogout() { logout(); toast('تم تسجيل الخروج'); setTimeout(() => location.reload(), 600); }
-
-/* ═══════════════════════════════════════════
-   LANGUAGE ENGINE
-═══════════════════════════════════════════ */
-
-
-
-
-
-/* ═══════════════════════════════════════════
-   TOAST (shared)
-═══════════════════════════════════════════ */
-function toast(msg, type='ok') {
-  let wrap = document.getElementById('toastWrap') || document.getElementById('tw');
-  if (!wrap) { wrap = document.createElement('div'); wrap.id = 'tw'; wrap.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none;'; document.body.appendChild(wrap); }
-  const el = document.createElement('div');
-  el.style.cssText = `background:#0D1B3E;color:white;padding:11px 18px;border-radius:10px;font-size:14px;display:flex;align-items:center;gap:9px;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,.4);animation:none;border-right:4px solid ${type==='ok'?'#2ECC8E':'#E8506A'};font-family:'Tajawal',sans-serif;`;
-  el.innerHTML = (type==='ok'?'✅':'❌') + ' ' + msg;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+async function doLogout() {
+  if (window.db && window._sb) {
+    try { await window.db.signOut(); } catch(e) {}
+  }
+  logout();
+  toast(t('btn_logout') || 'Logged out');
+  setTimeout(function(){ window.location.href = 'index.html'; }, 400);
 }
 
-// Also expose as toast for backward compat
-window.toast = toast_shared;
+// ── BOOKING MODAL ───────────────────────────────────
+var _bkCar   = false;
+var _bkProv  = null;
 
-/* ═══════════════════════════════════════════
-   MODAL CLOSE
-═══════════════════════════════════════════ */
-function closeModal() {
-  document.querySelectorAll('.overlay, .modal-overlay').forEach(m => m.remove());
+function openBooking(providerId) {
+  var p = PROVIDERS.find(function(x){ return x.id === providerId; });
+  if (!p) return;
+  _bkProv = p;
+  _bkCar  = false;
+  closeModal();
+
+  var o = document.createElement('div');
+  o.className = 'overlay';
+
+  var provName = (typeof currentLang !== 'undefined' && currentLang !== 'ar' && p.nameEn) ? p.nameEn : p.name;
+  var bookTitle = (t('book_now') || 'Book') + ' — ' + provName;
+
+  o.innerHTML = '<div class="modal">'
+    + '<div class="mhead"><h2>' + bookTitle + '</h2><button class="close-btn" onclick="closeModal()">×</button></div>'
+    + '<div style="background:linear-gradient(135deg,#0D1B3E,#162654);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:16px">'
+    + '<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#E8506A,#F5863E);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0">' + p.name.slice(0,2) + '</div>'
+    + '<div><div style="color:white;font-weight:700;font-size:14px">' + provName + '</div>'
+    + '<div style="color:rgba(255,255,255,.5);font-size:11px">★ ' + p.rating + ' · 📍 ' + p.city + '</div></div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
+    + '<div><label style="font-size:11px;font-weight:700;color:#3D4466;display:block;margin-bottom:4px">' + (t('lbl_service') || 'Service') + '</label>'
+    + '<select id="bkSvc" style="width:100%;border:1.5px solid #EEF0F7;border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13px;outline:none" onchange="updateBkPrice()">'
+    + '<option value="guiding">🗺️ ' + (t('svc_guiding_s') || 'Guide') + '</option>'
+    + '<option value="translation">🌐 ' + (t('svc_translation') || 'Translation') + '</option>'
+    + '<option value="companion">🤝 ' + (t('svc_companion') || 'Companion') + '</option>'
+    + '<option value="airport">✈️ ' + (t('svc_airport_s') || 'Airport') + '</option>'
+    + '</select></div>'
+    + '<div><label style="font-size:11px;font-weight:700;color:#3D4466;display:block;margin-bottom:4px">' + (t('lbl_city') || 'Date') + '</label>'
+    + '<input type="date" id="bkDate" style="width:100%;border:1.5px solid #EEF0F7;border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13px;outline:none"></div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'
+    + '<div><label style="font-size:11px;font-weight:700;color:#3D4466;display:block;margin-bottom:4px">' + (t('per_hour') || 'Hours') + '</label>'
+    + '<select id="bkHours" style="width:100%;border:1.5px solid #EEF0F7;border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13px;outline:none" onchange="updateBkPrice()">'
+    + '<option value="1">1h</option><option value="2" selected>2h</option><option value="3">3h</option><option value="4">4h</option>'
+    + '<option value="6">Full day (6h)</option><option value="8">Full day (8h)</option>'
+    + '</select></div>'
+    + '<div><label style="font-size:11px;font-weight:700;color:#3D4466;display:block;margin-bottom:4px">' + (t('lbl_service') || 'Car') + '</label>'
+    + '<div style="display:flex;gap:6px;margin-top:4px">'
+    + '<button id="bkNoCar" onclick="setBkCar(false)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #E8506A;background:rgba(232,80,106,.06);color:#E8506A;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">🚶 No</button>'
+    + '<button id="bkWithCar" onclick="setBkCar(true)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #EEF0F7;background:white;color:#3D4466;font-family:inherit;font-size:12px;cursor:pointer">🚗 Yes</button>'
+    + '</div></div>'
+    + '</div>'
+    + '<div id="bkPriceBox" style="background:linear-gradient(135deg,#0D1B3E,#162654);border-radius:12px;padding:12px;text-align:center;margin-bottom:14px">'
+    + '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px" id="bkPriceLabel">Total</div>'
+    + '<div style="font-size:26px;font-weight:900;color:white;font-family:\'Sora\',sans-serif" id="bkPriceVal">— SAR</div>'
+    + '<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px" id="bkNote">⚡ Over 4 hours = Full day automatically</div>'
+    + '</div>'
+    + '<button onclick="confirmBooking()" style="width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:12px;padding:13px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">'
+    + (t('book_now') || 'Book Now')
+    + '</button>'
+    + '</div>';
+
+  document.body.appendChild(o);
+  o.addEventListener('click', function(e){ if (e.target === o) closeModal(); });
+
+  // Set default date tomorrow
+  var tmr = new Date(); tmr.setDate(tmr.getDate()+1);
+  var dateEl = document.getElementById('bkDate');
+  if (dateEl) dateEl.value = tmr.toISOString().split('T')[0];
+
+  updateBkPrice();
 }
 
-/* ═══════════════════════════════════════════
-   INIT on DOM ready
-═══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
-  setLang(currentLang);
-});
+function setBkCar(val) {
+  _bkCar = val;
+  var nc = document.getElementById('bkNoCar');
+  var wc = document.getElementById('bkWithCar');
+  if (nc) { nc.style.borderColor = val?'#EEF0F7':'#E8506A'; nc.style.background = val?'white':'rgba(232,80,106,.06)'; nc.style.color = val?'#3D4466':'#E8506A'; }
+  if (wc) { wc.style.borderColor = val?'#E8506A':'#EEF0F7'; wc.style.background = val?'rgba(232,80,106,.06)':'white'; wc.style.color = val?'#E8506A':'#3D4466'; }
+  updateBkPrice();
+}
+
+function updateBkPrice() {
+  if (!_bkProv) return;
+  var hours  = parseFloat(document.getElementById('bkHours')?.value || 2);
+  var isFullDay = hours > 4;
+  var price  = calcPrice(_bkProv, hours, _bkCar);
+  var pv = document.getElementById('bkPriceVal');
+  var pl = document.getElementById('bkPriceLabel');
+  var pn = document.getElementById('bkNote');
+  if (pv) pv.textContent = price + ' SAR';
+  if (pl) pl.textContent = isFullDay ? 'Full Day' : hours + (hours===1?' hour':' hours');
+  if (pn) pn.textContent = isFullDay ? '⚡ Full day rate applied' : '⚡ Over 4h = full day rate';
+}
+
+function confirmBooking() {
+  var u = getUser();
+  if (!u) { closeModal(); openAuth('login'); return; }
+
+  var hours = parseFloat(document.getElementById('bkHours')?.value || 2);
+  var svc   = document.getElementById('bkSvc')?.value || 'guiding';
+  var date  = document.getElementById('bkDate')?.value || '';
+  var price = calcPrice(_bkProv, hours, _bkCar);
+
+  if (!date) { toast('Please select a date', 'err'); return; }
+
+  var bk = {
+    id:           'bk_' + Date.now(),
+    providerId:   _bkProv.id,
+    providerName: _bkProv.name,
+    clientName:   u.name,
+    service:      svc,
+    date:         date,
+    hours:        hours,
+    withCar:      _bkCar,
+    city:         _bkProv.city,
+    total:        price,
+    bookingType:  hours > 4 ? 'fullday' : 'hourly',
+    status:       'pending',
+    tripCode:     Math.floor(100000 + Math.random()*900000).toString(),
+    codeUnlocked: false,
+    createdAt:    new Date().toISOString()
+  };
+
+  // Save
+  if (window.db && window._sb) {
+    window.db.createBooking({
+      providerId:   _bkProv.id,
+      providerName: _bkProv.name,
+      service:      svc,
+      date:         date,
+      hours:        hours,
+      withCar:      _bkCar,
+      total:        price,
+    }).catch(function(){ saveBooking(bk); });
+  } else {
+    saveBooking(bk);
+  }
+
+  closeModal();
+  toast('Booking sent! ✅ The provider will confirm shortly.');
+  setTimeout(function(){ window.location.href = 'chat.html?provider=' + _bkProv.id; }, 1200);
+}
+
+// ── ADMIN HELPERS ───────────────────────────────────
+function generateTripCode() {
+  return Math.floor(100000 + Math.random()*900000).toString();
+}
