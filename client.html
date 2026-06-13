@@ -228,5 +228,177 @@ footer img{height:34px;width:34px;border-radius:50%;object-fit:contain;margin-bo
 
 
 
+
+<script>
+// ════ CLIENT DASHBOARD ════════════════════════════════
+var _currentTab = 'bk';
+
+function showTab(tab, btn) {
+  ['bk','chat','rfq','rev','sett'].forEach(function(t){
+    var el = document.getElementById('tab-'+t);
+    if (el) el.style.display = (t===tab) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('on'); });
+  if (btn) btn.classList.add('on');
+  _currentTab = tab;
+  if (tab==='bk')   renderBookings();
+  if (tab==='chat') renderChats();
+  if (tab==='rfq')  renderRFQs();
+}
+
+function renderBookings() {
+  var bks = (typeof getBookings==='function') ? getBookings() : JSON.parse(localStorage.getItem('lancul_bookings')||'[]');
+  var u = getUser();
+  if (u) bks = bks.filter(function(b){ return !b.clientName || b.clientName===u.name || b.client_id===u.supaId; });
+  var el = document.getElementById('bkList');
+  if (!el) return;
+  if (!bks.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g500)"><div style="font-size:40px;margin-bottom:10px">🗓️</div><p style="font-size:13px">'+(t('no_bookings')||'No bookings yet')+'</p><a href="providers.html" class="btn btn-p btn-sm" style="margin-top:12px;text-decoration:none;display:inline-block">'+(t('btn_new_booking')||'+ New Booking')+'</a></div>';
+    return;
+  }
+  var SVC = {guiding:'🗺️',translation:'🌐',companion:'🤝',airport:'✈️'};
+  el.innerHTML = bks.map(function(b){
+    return '<div style="background:white;border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:12px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'
+      + '<div><div style="font-weight:700;font-size:14px">'+(SVC[b.service]||'')+' '+(b.providerName||b.provider_name||'Provider')+'</div>'
+      + '<div style="font-size:12px;color:var(--g500);margin-top:4px">📅 '+(b.date||'?')+' · ⏱ '+((b.hours||0)>4?(t('full_day')||'Full day'):(b.hours||'?')+'h')+(b.withCar||b.with_car?' · 🚗':'')+'</div></div>'
+      + '<div style="text-align:left"><div style="font-weight:800;color:var(--pink);font-size:16px">'+(b.total||0)+' '+(t('sar')||'SAR')+'</div>'
+      + '<span class="badge" style="font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(245,200,66,.12);color:#8a6d00">'+(b.status||'pending')+'</span></div>'
+      + '</div>'
+      + (b.tripCode && b.status==='confirmed' ? '<div style="margin-top:10px;background:var(--g50);border-radius:8px;padding:10px;text-align:center"><div style="font-size:11px;color:var(--g500)">'+(t('trip_code')||'Your trip code — give it to your provider')+'</div><div style="font-size:22px;font-weight:900;letter-spacing:3px;color:var(--navy);font-family:monospace">'+b.tripCode+'</div></div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function renderChats() {
+  var chats = JSON.parse(localStorage.getItem('lc_chats_list')||'[]');
+  var el = document.getElementById('chatList');
+  if (!el) return;
+  if (!chats.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g500)"><div style="font-size:40px;margin-bottom:10px">💬</div><p style="font-size:13px">'+(t('no_messages')||'No conversations yet')+'</p></div>';
+    return;
+  }
+  el.innerHTML = chats.map(function(c){
+    var prov = c.providers || c.provider || {};
+    return '<a href="chat.html?chat='+c.id+'" style="display:flex;align-items:center;gap:12px;background:white;border-radius:var(--r);box-shadow:var(--sh);padding:14px;margin-bottom:10px;text-decoration:none;color:inherit">'
+      + '<div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--orange));display:flex;align-items:center;justify-content:center;color:white;font-weight:700">'+((prov.name||'P').slice(0,2))+'</div>'
+      + '<div style="flex:1"><div style="font-weight:700;font-size:13px">'+(prov.name||'Provider')+'</div><div style="font-size:12px;color:var(--g500)">'+(c.lastMsg||t('start_chat')||'Start chatting...')+'</div></div>'
+      + '</a>';
+  }).join('');
+}
+
+function renderRFQs() {
+  var rfqs = (typeof getRFQs==='function') ? getRFQs() : JSON.parse(localStorage.getItem('lancul_rfqs')||'[]');
+  var el = document.getElementById('rfqList');
+  if (!el) return;
+  if (!rfqs.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g500)"><div style="font-size:40px;margin-bottom:10px">📋</div><p style="font-size:13px">No B2B requests yet</p></div>';
+    return;
+  }
+  el.innerHTML = rfqs.map(function(r){
+    return '<div style="background:white;border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:12px"><div style="font-weight:700">'+(r.company||r.event_type||'Request')+'</div><div style="font-size:12px;color:var(--g500);margin-top:4px">'+(r.city||'')+' · '+(r.status||'new')+'</div></div>';
+  }).join('');
+}
+
+function saveSettings() {
+  var u = getUser() || {};
+  u.name        = document.getElementById('settName').value || u.name;
+  u.email       = document.getElementById('settEmail').value || u.email;
+  u.nationality = document.getElementById('settNat').value || '';
+  u.phone       = document.getElementById('settPhone') ? document.getElementById('settPhone').value : (u.phone||'');
+  u.preferred_lang = document.getElementById('settLang').value || 'en';
+  setUser(u);
+  // Sync to Supabase
+  if (window._sb && u.supaId) {
+    try {
+      window._sb.from('profiles').update({
+        name: u.name, nationality: u.nationality, phone: u.phone, preferred_lang: u.preferred_lang
+      }).eq('id', u.supaId);
+    } catch(e){}
+  }
+  toast(t('saved')||'Saved ✅');
+  renderProfileHeader();
+  checkProfileComplete();
+}
+
+function renderProfileHeader() {
+  var u = getUser();
+  if (!u) return;
+  var av = document.getElementById('phAv');
+  if (av) av.textContent = (u.name||'U').slice(0,2);
+  var nm = document.getElementById('phName');
+  if (nm) nm.textContent = u.name || 'User';
+  var em = document.getElementById('phEmail');
+  if (em) em.textContent = u.email || '';
+  // Fill settings form
+  if (document.getElementById('settName'))  document.getElementById('settName').value = u.name||'';
+  if (document.getElementById('settEmail')) document.getElementById('settEmail').value = u.email||'';
+  if (document.getElementById('settNat'))   document.getElementById('settNat').value = u.nationality||'';
+  if (document.getElementById('settPhone')) document.getElementById('settPhone').value = u.phone||'';
+  if (document.getElementById('settLang') && u.preferred_lang) document.getElementById('settLang').value = u.preferred_lang;
+  // Stats
+  var bks = (typeof getBookings==='function') ? getBookings() : [];
+  if (document.getElementById('statBk')) document.getElementById('statBk').textContent = bks.length;
+  var chats = JSON.parse(localStorage.getItem('lc_chats_list')||'[]');
+  if (document.getElementById('statChat')) document.getElementById('statChat').textContent = chats.length;
+}
+
+function checkProfileComplete() {
+  var u = getUser();
+  if (!u) return;
+  var incomplete = !u.nationality || !u.preferred_lang;
+  var banner = document.getElementById('completeBanner');
+  if (incomplete && !banner) {
+    var dash = document.getElementById('dashboard');
+    if (dash) {
+      var b = document.createElement('div');
+      b.id = 'completeBanner';
+      b.style.cssText = 'background:linear-gradient(135deg,rgba(245,134,62,.12),rgba(232,80,106,.1));border:1px solid rgba(245,134,62,.25);border-radius:12px;padding:14px 18px;margin:0 auto 16px;max-width:1100px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+      b.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px">✨</span><div><div style="font-weight:700;font-size:14px">'+(t('complete_profile')||'Complete your profile')+'</div><div style="font-size:12px;color:var(--g600)">'+(t('complete_profile_sub')||'Add your nationality and preferred language so guides can serve you better')+'</div></div></div><button class="btn btn-p btn-sm" onclick="showTab(\'sett\',document.querySelector(\'.tab:last-child\'))">'+(t('complete_now')||'Complete now')+'</button>';
+      var wrap = dash.querySelector('.dash-wrap');
+      if (wrap) wrap.insertBefore(b, wrap.firstChild);
+    }
+  } else if (!incomplete && banner) {
+    banner.remove();
+  }
+}
+
+// ════ NAV ════
+function initNav() {
+  var u = getUser();
+  if (document.getElementById('navAB')) document.getElementById('navAB').style.display = u?'none':'flex';
+  if (document.getElementById('navUB')) document.getElementById('navUB').style.display = u?'flex':'none';
+  if (u && document.getElementById('navUN')) document.getElementById('navUN').textContent = u.name||'';
+}
+function toggleDrawer(){ var d=document.getElementById('navDrawer'); if(d) d.classList.toggle('open'); }
+function closeDrawer(){ var d=document.getElementById('navDrawer'); if(d) d.classList.remove('open'); }
+
+// ════ INIT ════
+function initDash() {
+  var u = getUser();
+  if (u) {
+    document.getElementById('authWall').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderProfileHeader();
+    renderBookings();
+    checkProfileComplete();
+    initNav();
+  } else {
+    document.getElementById('authWall').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  initDash();
+  if (typeof buildLangDD==='function') buildLangDD();
+  window.addEventListener('sb_ready', initDash);
+});
+document.addEventListener('langchange', function(){
+  renderProfileHeader();
+  if (_currentTab==='bk') renderBookings();
+});
+</script>
+
 </body>
 </html>

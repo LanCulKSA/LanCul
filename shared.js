@@ -3,6 +3,46 @@
    Core data, utilities, auth modal, booking modal
 ===================================================== */
 
+// ── CENTRAL SETTINGS (Supabase -> localStorage cache) ──
+// Reads VAT %, commission %, USD rate from app_settings.
+// localStorage is the instant cache; Supabase is the source of truth.
+async function loadAppSettings() {
+  if (!window._sb) return;
+  try {
+    var r = await window._sb.from('app_settings').select('key,value');
+    if (r && r.data) {
+      r.data.forEach(function(row){
+        if (row.key === 'vat_pct')        localStorage.setItem('lancul_vat_pct', row.value);
+        if (row.key === 'commission_pct') localStorage.setItem('lancul_commission_pct', row.value);
+        if (row.key === 'usd_rate')       localStorage.setItem('lancul_usd_rate', row.value);
+      });
+      document.dispatchEvent(new CustomEvent('settingschange'));
+    }
+  } catch(e) { /* offline -> use cached localStorage */ }
+}
+// Save one setting to Supabase (admin use)
+async function saveAppSetting(key, value) {
+  localStorage.setItem('lancul_' + key, value); // instant local
+  if (!window._sb) return false;
+  try {
+    await window._sb.from('app_settings').upsert({ key: key, value: String(value), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    return true;
+  } catch(e) { return false; }
+}
+// Load settings as soon as Supabase is ready, and subscribe to live changes
+if (typeof window !== 'undefined') {
+  window.addEventListener('sb_ready', function(){
+    loadAppSettings();
+    if (window._sb) {
+      window._sb.channel('app_settings_live')
+        .on('postgres_changes', { event:'*', schema:'public', table:'app_settings' }, function(){
+          loadAppSettings();
+        }).subscribe();
+    }
+  });
+}
+
+
 // ── PROVIDERS DATA ─────────────────────────────────
 const PROVIDERS = [
   {
@@ -95,6 +135,73 @@ function calcPrice(p, hours, withCar) {
     var rate = withCar ? p.pricing.hourly_with_car : p.pricing.hourly_no_car;
     return rate * parseFloat(hours);
   }
+}
+
+// ── PRICE BREAKDOWN (VAT + Commission) ──────────────
+// Rates are admin-editable via localStorage.
+function getVatPct() {
+  var v = parseFloat(localStorage.getItem('lancul_vat_pct'));
+  return isNaN(v) ? 15 : v;
+}
+function getCommissionPct() {
+  var c = parseFloat(localStorage.getItem('lancul_commission_pct'));
+  return isNaN(c) ? 15 : c;
+}
+
+// ── CURRENCY (SAR base, USD shown alongside) ────────
+// Admin-editable USD rate: how many SAR = 1 USD (default 3.75)
+function getUsdRate() {
+  var r = parseFloat(localStorage.getItem('lancul_usd_rate'));
+  return (isNaN(r) || r <= 0) ? 3.75 : r;
+}
+// Format a SAR amount showing both currencies: "1,150 SAR ($307)"
+function money(sar) {
+  sar = Math.round(sar || 0);
+  var usd = Math.round(sar / getUsdRate());
+  var sarLabel = (typeof t === 'function' ? (t('sar') || 'SAR') : 'SAR');
+  return sar.toLocaleString() + ' ' + sarLabel + ' <span style="opacity:.6;font-weight:400">($' + usd.toLocaleString() + ')</span>';
+}
+// Plain-text version (no HTML) for inputs/labels
+function moneyTxt(sar) {
+  sar = Math.round(sar || 0);
+  var usd = Math.round(sar / getUsdRate());
+  return sar.toLocaleString() + ' SAR ($' + usd.toLocaleString() + ')';
+}
+
+// providerPrice = base price the provider set (e.g. 1000)
+// Returns full money breakdown.
+//   VAT is ADDED on top of provider price  -> client pays providerPrice + VAT
+//   Commission is taken FROM provider price -> provider nets providerPrice - commission
+function priceBreakdown(providerPrice) {
+  providerPrice = Math.round(providerPrice || 0);
+  var vatPct  = getVatPct();
+  var commPct = getCommissionPct();
+
+  var vat        = Math.round(providerPrice * vatPct / 100);   // goes to government
+  var clientPays = providerPrice + vat;                        // total client pays
+  var commission = Math.round(providerPrice * commPct / 100);  // site commission (from provider)
+  var providerNet = providerPrice - commission;                // provider receives
+
+  return {
+    providerPrice: providerPrice,   // 1000
+    vatPct:        vatPct,           // 15
+    vat:           vat,              // 150
+    clientPays:    clientPays,       // 1150
+    commPct:       commPct,          // 15
+    commission:    commission,       // 150
+    providerNet:   providerNet       // 850
+  };
+}
+
+// Render a clean breakdown HTML block (used in booking/invoice)
+function breakdownHtml(providerPrice) {
+  var b = priceBreakdown(providerPrice);
+  return '<div style="font-size:13px;line-height:1.9">'
+    + '<div style="display:flex;justify-content:space-between"><span>' + (t('provider_price')||'Service price') + '</span><strong>' + money(b.providerPrice) + '</strong></div>'
+    + '<div style="display:flex;justify-content:space-between;color:#6B7280"><span>' + (t('vat')||'VAT') + ' (' + b.vatPct + '%)</span><span>+ ' + money(b.vat) + '</span></div>'
+    + '<div style="border-top:1px dashed #E5E7EB;margin:6px 0"></div>'
+    + '<div style="display:flex;justify-content:space-between;font-weight:800;color:#E8506A;font-size:15px"><span>' + (t('client_pays')||'Total') + '</span><span>' + money(b.clientPays) + '</span></div>'
+    + '</div>';
 }
 
 // ── BOOKINGS (localStorage) ─────────────────────────
@@ -401,10 +508,9 @@ function openBooking(providerId) {
     + '<button id="bkWithCar" onclick="setBkCar(true)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #EEF0F7;background:white;color:#3D4466;font-family:inherit;font-size:12px;cursor:pointer">🚗 Yes</button>'
     + '</div></div>'
     + '</div>'
-    + '<div id="bkPriceBox" style="background:linear-gradient(135deg,#0D1B3E,#162654);border-radius:12px;padding:12px;text-align:center;margin-bottom:14px">'
-    + '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px" id="bkPriceLabel">Total</div>'
-    + '<div style="font-size:26px;font-weight:900;color:white;font-family:\'Sora\',sans-serif" id="bkPriceVal">— SAR</div>'
-    + '<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px" id="bkNote">⚡ Over 4 hours = Full day automatically</div>'
+    + '<div id="bkPriceBox" style="background:linear-gradient(135deg,#0D1B3E,#162654);border-radius:12px;padding:14px;margin-bottom:14px">'
+    + '<div id="bkBreakdown" style="color:white"></div>'
+    + '<div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;text-align:center" id="bkNote"></div>'
     + '</div>'
     + '<button onclick="confirmBooking()" style="width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:12px;padding:13px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">'
     + (t('book_now') || 'Book Now')
@@ -433,15 +539,21 @@ function setBkCar(val) {
 
 function updateBkPrice() {
   if (!_bkProv) return;
-  var hours  = parseFloat(document.getElementById('bkHours')?.value || 2);
+  var hours  = parseFloat(document.getElementById('bkHours') ? document.getElementById('bkHours').value : 2);
   var isFullDay = hours > 4;
-  var price  = calcPrice(_bkProv, hours, _bkCar);
-  var pv = document.getElementById('bkPriceVal');
-  var pl = document.getElementById('bkPriceLabel');
+  var price  = calcPrice(_bkProv, hours, _bkCar);   // provider base price
+  var b = priceBreakdown(price);
+  var sar = (t('sar') || 'SAR');
+
+  var bd = document.getElementById('bkBreakdown');
+  if (bd) {
+    bd.innerHTML =
+        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px"><span style="color:rgba(255,255,255,.6)">' + (t('provider_price')||'Service price') + '</span><span>' + money(b.providerPrice) + '</span></div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:rgba(255,255,255,.6)">' + (t('vat')||'VAT') + ' (' + b.vatPct + '%)</span><span style="color:rgba(255,255,255,.8)">+ ' + money(b.vat) + '</span></div>'
+      + '<div style="border-top:1px solid rgba(255,255,255,.15);padding-top:8px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:rgba(255,255,255,.7)">' + (t('client_pays')||'You pay') + '</span><span style="font-size:20px;font-weight:900;font-family:\'Sora\',sans-serif">' + money(b.clientPays) + '</span></div>';
+  }
   var pn = document.getElementById('bkNote');
-  if (pv) pv.textContent = price + ' SAR';
-  if (pl) pl.textContent = isFullDay ? 'Full Day' : hours + (hours===1?' hour':' hours');
-  if (pn) pn.textContent = isFullDay ? '⚡ Full day rate applied' : '⚡ Over 4h = full day rate';
+  if (pn) pn.textContent = isFullDay ? ('\u26a1 ' + (t('full_day_applied')||'Full day rate applied')) : ('\u26a1 ' + (t('over_4h')||'Over 4h = full day rate'));
 }
 
 function confirmBooking() {
@@ -455,22 +567,29 @@ function confirmBooking() {
 
   if (!date) { toast('Please select a date', 'err'); return; }
 
+  var b = priceBreakdown(price);
   var bk = {
-    id:           'bk_' + Date.now(),
-    providerId:   _bkProv.id,
-    providerName: _bkProv.name,
-    clientName:   u.name,
-    service:      svc,
-    date:         date,
-    hours:        hours,
-    withCar:      _bkCar,
-    city:         _bkProv.city,
-    total:        price,
-    bookingType:  hours > 4 ? 'fullday' : 'hourly',
-    status:       'pending',
-    tripCode:     Math.floor(100000 + Math.random()*900000).toString(),
-    codeUnlocked: false,
-    createdAt:    new Date().toISOString()
+    id:            'bk_' + Date.now(),
+    providerId:    _bkProv.id,
+    providerName:  _bkProv.name,
+    clientName:    u.name,
+    service:       svc,
+    date:          date,
+    hours:         hours,
+    withCar:       _bkCar,
+    city:          _bkProv.city,
+    providerPrice: b.providerPrice,
+    vatPct:        b.vatPct,
+    vatAmount:     b.vat,
+    total:         b.clientPays,
+    commPct:       b.commPct,
+    commissionAmount: b.commission,
+    providerNet:   b.providerNet,
+    bookingType:   hours > 4 ? 'fullday' : 'hourly',
+    status:        'pending',
+    tripCode:      Math.floor(100000 + Math.random()*900000).toString(),
+    codeUnlocked:  false,
+    createdAt:     new Date().toISOString()
   };
 
   // Save

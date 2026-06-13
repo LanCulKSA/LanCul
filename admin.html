@@ -34,7 +34,7 @@ body{font-family:'Sora',sans-serif;background:#F0F2F5;color:#0D1B3E;min-height:1
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
 .kpi{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.07);border-top:3px solid #E5E7EB;}
 .kpi.pk{border-top-color:#E8506A;} .kpi.gn{border-top-color:#2ECC8E;} .kpi.or{border-top-color:#F5863E;} .kpi.bl{border-top-color:#4A90E2;} .kpi.yl{border-top-color:#F5C842;}
-.kpi-n{font-size:28px;font-weight:900;} .kpi.pk .kpi-n{color:#E8506A;} .kpi.gn .kpi-n{color:#2ECC8E;} .kpi.or .kpi-n{color:#F5863E;} .kpi.bl .kpi-n{color:#4A90E2;} .kpi.yl .kpi-n{color:#8a6d00;}
+.kpi-n{font-size:18px;font-weight:900;} .kpi.pk .kpi-n{color:#E8506A;} .kpi.gn .kpi-n{color:#2ECC8E;} .kpi.or .kpi-n{color:#F5863E;} .kpi.bl .kpi-n{color:#4A90E2;} .kpi.yl .kpi-n{color:#8a6d00;}
 .kpi-l{font-size:11px;color:#9CA3AF;margin-top:3px;}
 .tbl{width:100%;border-collapse:collapse;}
 .tbl th{text-align:left;padding:10px 16px;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F3F4F6;}
@@ -117,6 +117,7 @@ body{font-family:'Sora',sans-serif;background:#F0F2F5;color:#0D1B3E;min-height:1
           <div class="kpi gn"><div class="kpi-n" id="kpiBookings">0</div><div class="kpi-l">Total Bookings</div></div>
           <div class="kpi or"><div class="kpi-n" id="kpiRevenue">0</div><div class="kpi-l">Revenue (SAR)</div></div>
           <div class="kpi bl"><div class="kpi-n" id="kpiCommission">0</div><div class="kpi-l">Commission (SAR)</div></div>
+          <div class="kpi yl"><div class="kpi-n" id="kpiVat">0</div><div class="kpi-l">VAT Collected (SAR)</div></div>
           <div class="kpi yl"><div class="kpi-n" id="kpiPending">0</div><div class="kpi-l">Pending Apps</div></div>
           <div class="kpi bl"><div class="kpi-n" id="kpiRFQ">0</div><div class="kpi-l">Open RFQs</div></div>
         </div>
@@ -212,8 +213,16 @@ body{font-family:'Sora',sans-serif;background:#F0F2F5;color:#0D1B3E;min-height:1
               <input id="newPass" type="password" placeholder="Min 6 characters" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none">
             </div>
             <div style="margin-bottom:16px">
-              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">LanCul Commission %</label>
-              <input id="commPct" type="number" value="15" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none">
+              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">VAT % (added to client price, paid to government)</label>
+              <input id="vatPct" type="number" value="15" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none;margin-bottom:14px">
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">LanCul Commission % (deducted from provider)</label>
+              <input id="commPct" type="number" value="15" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none;margin-bottom:14px">
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">USD Rate (1 USD = ? SAR)</label>
+              <input id="usdRate" type="number" step="0.01" value="3.75" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none">
             </div>
             <button class="btn btn-p" onclick="saveSettings()" style="width:100%">Save Settings</button>
           </div>
@@ -268,6 +277,10 @@ function gTab(name, btn) {
 
 // INIT
 function initDash() {
+  // Load saved rate settings into inputs
+  var v = localStorage.getItem('lancul_vat_pct'); if(v && document.getElementById('vatPct')) document.getElementById('vatPct').value = v;
+  var c = localStorage.getItem('lancul_commission_pct'); if(c && document.getElementById('commPct')) document.getElementById('commPct').value = c;
+  var ur = localStorage.getItem('lancul_usd_rate'); if(ur && document.getElementById('usdRate')) document.getElementById('usdRate').value = ur;
   loadOverview();
   if (window._sb) subscribeAlerts();
 }
@@ -287,13 +300,17 @@ async function loadOverview() {
   var active  = apps.filter(function(a){ return a.status==='active'; }).length;
   var pending = apps.filter(function(a){ return !a.status||a.status==='pending'; }).length;
   var revenue = bks.reduce(function(s,b){ return s+(b.total||0); },0);
-  var comm    = bks.reduce(function(s,b){ return s+(b.commission_amount||b.commissionAmount||Math.round((b.total||0)*.15)); },0);
+  var comm    = bks.reduce(function(s,b){ return s+(b.commissionAmount||b.commission_amount||0); },0);
+  var vatSum  = bks.reduce(function(s,b){ return s+(b.vatAmount||b.vat_amount||0); },0);
   var openRFQ = rfqs.filter(function(r){ return r.status==='new'||!r.status; }).length;
 
   document.getElementById('kpiProviders').textContent  = active;
   document.getElementById('kpiBookings').textContent   = bks.length;
-  document.getElementById('kpiRevenue').textContent    = revenue.toLocaleString();
-  document.getElementById('kpiCommission').textContent = comm.toLocaleString();
+  var rate = parseFloat(localStorage.getItem('lancul_usd_rate'))||3.75;
+  function dual(v){ return v.toLocaleString() + ' / $' + Math.round(v/rate).toLocaleString(); }
+  document.getElementById('kpiRevenue').textContent    = dual(revenue);
+  document.getElementById('kpiCommission').textContent = dual(comm);
+  if(document.getElementById('kpiVat')) document.getElementById('kpiVat').textContent = dual(vatSum);
   document.getElementById('kpiPending').textContent    = pending;
   document.getElementById('kpiRFQ').textContent        = openRFQ;
 
@@ -555,13 +572,35 @@ async function loadExperiences() {
 }
 
 // SETTINGS
-function saveSettings() {
+async function saveSettings() {
   var pass=document.getElementById('newPass').value;
   if(pass&&pass.length>=6){ localStorage.setItem(PASS_KEY,pass); document.getElementById('newPass').value=''; }
   var comm=document.getElementById('commPct').value;
-  if(comm) localStorage.setItem('lancul_commission_pct',comm);
-  toast('Settings saved');
+  var vat=document.getElementById('vatPct').value;
+  var usd=document.getElementById('usdRate').value;
+
+  // Save centrally (Supabase) + locally. saveAppSetting comes from shared.js
+  if (typeof saveAppSetting === 'function') {
+    if(vat)  await saveAppSetting('vat_pct', vat);
+    if(comm) await saveAppSetting('commission_pct', comm);
+    if(usd && parseFloat(usd)>0) await saveAppSetting('usd_rate', usd);
+    toast(window._sb ? 'Saved for all visitors ✅' : 'Saved locally (offline)');
+  } else {
+    if(comm) localStorage.setItem('lancul_commission_pct',comm);
+    if(vat) localStorage.setItem('lancul_vat_pct',vat);
+    if(usd) localStorage.setItem('lancul_usd_rate',usd);
+    toast('Settings saved');
+  }
+  loadOverview();
 }
+
+// Re-render when central settings change (live)
+document.addEventListener('settingschange', function(){
+  var v = localStorage.getItem('lancul_vat_pct'); if(v && document.getElementById('vatPct')) document.getElementById('vatPct').value = v;
+  var c = localStorage.getItem('lancul_commission_pct'); if(c && document.getElementById('commPct')) document.getElementById('commPct').value = c;
+  var u = localStorage.getItem('lancul_usd_rate'); if(u && document.getElementById('usdRate')) document.getElementById('usdRate').value = u;
+  if (typeof loadOverview === 'function') loadOverview();
+});
 
 // TOAST
 function toast(msg,type) {

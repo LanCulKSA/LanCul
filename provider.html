@@ -601,6 +601,9 @@ body{font-family:'Tajawal',sans-serif;background:var(--g50);color:var(--navy);di
 
 <div id="tw"></div>
 
+
+<script src="supabase.js"></script>
+<script src="shared.js"></script>
 <script>
 // ════ MOCK DATA + STATE ════════════════════════════════
 // Provider auth — in production: Supabase Auth
@@ -994,18 +997,37 @@ function openChatFor(bkId, clientName) {
 }
 
 // ════ EARNINGS ═════════════════════════════════════════
+function provNet(b) {
+  if (b.providerNet != null) return b.providerNet;
+  if (b.providerAmount != null) return b.providerAmount;
+  var base = b.providerPrice != null ? b.providerPrice : Math.round((b.total||0)/1.15);
+  var cp = parseFloat(localStorage.getItem('lancul_commission_pct')); if(isNaN(cp)) cp=15;
+  return base - Math.round(base*cp/100);
+}
+function provComm(b) {
+  if (b.commissionAmount != null) return b.commissionAmount;
+  var base = b.providerPrice != null ? b.providerPrice : Math.round((b.total||0)/1.15);
+  var cp = parseFloat(localStorage.getItem('lancul_commission_pct')); if(isNaN(cp)) cp=15;
+  return Math.round(base*cp/100);
+}
+function provBase(b) {
+  return b.providerPrice != null ? b.providerPrice : Math.round((b.total||0)/1.15);
+}
+
 function renderEarnings() {
   const completed = getMyBookings().filter(b => b.status === 'completed');
-  const total = completed.reduce((s,b) => s + (b.providerAmount || Math.round(b.total*0.85)), 0);
-  const comm  = completed.reduce((s,b) => s + (b.commissionAmount || Math.round(b.total*0.15)), 0);
+  const total = completed.reduce((s,b) => s + provNet(b), 0);
+  const comm  = completed.reduce((s,b) => s + provComm(b), 0);
   const now = new Date();
   const monthEarn = completed
     .filter(b => new Date(b.createdAt).getMonth() === now.getMonth())
-    .reduce((s,b) => s + (b.providerAmount || Math.round(b.total*0.85)), 0);
+    .reduce((s,b) => s + provNet(b), 0);
 
-  document.getElementById('earnTotal').textContent = Math.round(total).toLocaleString() + ' ر.س';
-  document.getElementById('earnMonth').textContent = Math.round(monthEarn).toLocaleString() + ' ر.س';
-  document.getElementById('earnComm').textContent  = Math.round(comm).toLocaleString() + ' ر.س';
+  var _rate = parseFloat(localStorage.getItem('lancul_usd_rate'))||3.75;
+  function _dual(v){ return Math.round(v).toLocaleString()+' ر.س / $'+Math.round(v/_rate).toLocaleString(); }
+  document.getElementById('earnTotal').textContent = _dual(total);
+  document.getElementById('earnMonth').textContent = _dual(monthEarn);
+  document.getElementById('earnComm').textContent  = _dual(comm);
 
   const cont = document.getElementById('earnList');
   if (!completed.length) { cont.innerHTML = '<p style="color:var(--g500);font-size:13px;text-align:center;padding:20px">لا توجد حجوزات مكتملة بعد</p>'; return; }
@@ -1017,8 +1039,8 @@ function renderEarnings() {
         <div class="earn-date">📅 ${b.date||'—'} · 🏙️ ${b.city||'—'}</div>
       </div>
       <div style="text-align:left">
-        <div class="earn-amount">+${(b.providerAmount||Math.round(b.total*0.85)).toLocaleString()} ر.س</div>
-        <div style="font-size:10px;color:var(--g500)">من أصل ${b.total} ر.س</div>
+        <div class="earn-amount">+${provNet(b).toLocaleString()} ر.س</div>
+        <div style="font-size:10px;color:var(--g500)">سعرك ${provBase(b)} − عمولة ${provComm(b)}</div>
       </div>
     </div>`).join('');
 }
@@ -1237,8 +1259,8 @@ function loadPortfolio() {
   }
 }
 
+
+document.addEventListener('settingschange', function(){ if(typeof renderEarnings==='function') renderEarnings(); });
 </script>
-<script src="supabase.js"></script>
-<script src="shared.js"></script>
 </body>
 </html>

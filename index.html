@@ -966,6 +966,8 @@ body:not(.ltr){font-family:'Tajawal',sans-serif;}
 
 <script src="lang.js"></script>
 <script src="supabase.js"></script>
+
+<script src="shared.js"></script>
 <script>
 // ── DATA: loaded from shared.js (PROVIDERS, EXPERIENCES, MARKETPLACE, LANG_FLAGS)
 // ── STATE ────────────────────────────────────────────────────────
@@ -1102,7 +1104,7 @@ function renderProviders(){
         <div class="chips">${(p.languages||[]).slice(0,3).map(l=>`<span class="chip cd">${LANG_FLAGS[l]||'🌐'} ${langName(l)}</span>`).join('')}</div>
         <div class="chips">${(p.offers||[]).map(s=>SVC[s]||'').join('')}</div>
         ${p.hasPackages||p.packages?.length?`<div style="font-size:11px;color:var(--green);margin-top:4px;font-weight:600">🗺️ ${t('has_packages')||'Has tour packages'}</div>`:''}
-        <div class="price-tag">${t('hourly_no_car')||'Hourly'} <strong>${p.pricing?.hourly_no_car||120} ${t('sar')||'SAR'}</strong></div>
+        <div class="price-tag">${t('hourly_no_car')||'Hourly'} <strong>${money(p.pricing?.hourly_no_car||120)}</strong></div>
         <div class="pcard-btns">
           <button class="btn-chat" onclick="event.stopPropagation();window.location.href='chat.html?provider=${p.id}'">💬 ${t('how2')||'Chat'}</button>
           <button class="btn-book" onclick="event.stopPropagation();openBooking('${p.id}')">${t('book_now')||'Book'}</button>
@@ -1192,6 +1194,7 @@ function renderRFQTypes(){
 }
 
 // ── LANG CHANGE → RE-RENDER ───────────────────────────────────────
+document.addEventListener('settingschange', function(){ if(typeof renderProviders==='function') renderProviders(); });
 document.addEventListener('langchange', function(){
   renderProviders();
   renderExp();
@@ -1223,6 +1226,5 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 });
 </script>
-<script src="shared.js"></script>
 </body>
 </html>

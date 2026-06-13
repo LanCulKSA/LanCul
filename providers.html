@@ -467,6 +467,8 @@ document.addEventListener("langchange", function(){
 </script>
 <script>
 document.addEventListener('langchange',function(){if(typeof applyFilters==="function")applyFilters();});
+
+document.addEventListener('settingschange', function(){ if(typeof applyFilters==='function') applyFilters(); });
 </script>
 </body>
 </html>

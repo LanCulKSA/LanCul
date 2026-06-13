@@ -235,6 +235,20 @@ const T = {
     err_fill_all:{ar:"يرجى تعبئة جميع الحقول", en:"Please fill all fields", es:"Por favor complete todos los campos", fr:"Veuillez remplir tous les champs", it:"Compila tutti i campi", pt:"Preencha todos os campos", zh:"请填写所有字段", ja:"すべての項目を入力してください", ko:"모든 항목을 입력하세요", de:"Bitte alle Felder ausfüllen", ru:"Заполните все поля"},
     account_type:{ar:"نوع الحساب", en:"Account Type", es:"Tipo de cuenta", fr:"Type de compte", it:"Tipo di account", pt:"Tipo de conta", zh:"账户类型", ja:"アカウントタイプ", ko:"계정 유형", de:"Kontotyp", ru:"Тип аккаунта"},
     signup_success:{ar:"تم إنشاء حسابك بنجاح", en:"Account created successfully", es:"Cuenta creada con éxito", fr:"Compte créé avec succès", it:"Account creato", pt:"Conta criada", zh:"账户创建成功", ja:"アカウントが作成されました", ko:"계정이 생성되었습니다", de:"Konto erfolgreich erstellt", ru:"Аккаунт создан"},
+    complete_profile:{ar:'أكمل ملفك الشخصي', en:'Complete your profile', es:'Completa tu perfil', fr:'Complétez votre profil', it:'Completa il tuo profilo', pt:'Complete seu perfil', zh:'完善您的资料', ja:'プロフィールを完成', ko:'프로필 완성하기', de:'Profil vervollständigen', ru:'Заполните профиль'},
+    complete_profile_sub:{ar:'أضف جنسيتك ولغتك المفضلة ليخدمك المرشدون بشكل أفضل', en:'Add your nationality and preferred language so guides can serve you better', es:'Anade tu nacionalidad e idioma', fr:'Ajoutez votre nationalite et langue', it:'Aggiungi nazionalita e lingua', pt:'Adicione sua nacionalidade e idioma', zh:'添加您的国籍和首选语言', ja:'国籍と希望言語を追加してください', ko:'국적과 선호 언어를 추가하세요', de:'Fuegen Sie Nationalitaet und Sprache hinzu', ru:'Добавьте национальность и язык'},
+    complete_now:{ar:'أكمل الآن', en:'Complete now', es:'Completar', fr:'Compléter', it:'Completa', pt:'Completar', zh:'立即完成', ja:'今すぐ', ko:'지금', de:'Jetzt', ru:'Заполнить'},
+    no_bookings:{ar:'لا توجد حجوزات بعد', en:'No bookings yet', es:'Sin reservas', fr:'Aucune réservation', it:'Nessuna prenotazione', pt:'Sem reservas', zh:'暂无预订', ja:'予約なし', ko:'예약 없음', de:'Noch keine Buchungen', ru:'Нет броней'},
+    no_messages:{ar:'لا توجد محادثات', en:'No conversations yet', es:'Sin conversaciones', fr:'Aucune conversation', it:'Nessuna conversazione', pt:'Sem conversas', zh:'暂无对话', ja:'会話なし', ko:'대화 없음', de:'Keine Gespraeche', ru:'Нет бесед'},
+    trip_code:{ar:'كود رحلتك — أعطه لمقدم الخدمة', en:'Your trip code — give it to your provider', es:'Codigo de viaje', fr:'Code de voyage', it:'Codice viaggio', pt:'Codigo da viagem', zh:'行程代码', ja:'旅行コード', ko:'여행 코드', de:'Ihr Reisecode', ru:'Код поездки'},
+    full_day:{ar:'يوم كامل', en:'Full day', es:'Dia completo', fr:'Journee', it:'Giornata', pt:'Dia inteiro', zh:'全天', ja:'1日', ko:'하루 종일', de:'Ganzer Tag', ru:'Целый день'},
+    saved:{ar:'تم الحفظ', en:'Saved', es:'Guardado', fr:'Enregistre', it:'Salvato', pt:'Salvo', zh:'已保存', ja:'保存しました', ko:'저장됨', de:'Gespeichert', ru:'Сохранено'},
+    start_chat:{ar:'ابدأ المحادثة', en:'Start chatting', es:'Chatear', fr:'Discuter', it:'Chatta', pt:'Conversar', zh:'开始聊天', ja:'チャット開始', ko:'채팅 시작', de:'Chatten', ru:'Начать чат'},
+    vat:{ar:'ضريبة القيمة المضافة', en:'VAT', es:'IVA', fr:'TVA', it:'IVA', pt:'IVA', zh:'增值税', ja:'付加価値税', ko:'부가세', de:'MwSt', ru:'НДС'},
+    provider_price:{ar:'سعر الخدمة', en:'Service price', es:'Precio del servicio', fr:'Prix du service', it:'Prezzo servizio', pt:'Preço do serviço', zh:'服务价格', ja:'サービス料金', ko:'서비스 가격', de:'Servicepreis', ru:'Цена услуги'},
+    client_pays:{ar:'الإجمالي', en:'You pay', es:'Pagas', fr:'Vous payez', it:'Paghi', pt:'Você paga', zh:'您支付', ja:'お支払い', ko:'결제 금액', de:'Sie zahlen', ru:'К оплате'},
+    full_day_applied:{ar:'تم تطبيق سعر اليوم الكامل', en:'Full day rate applied', es:'Tarifa día completo', fr:'Tarif journée', it:'Tariffa giornaliera', pt:'Tarifa dia inteiro', zh:'全天费率', ja:'1日料金適用', ko:'하루 요금 적용', de:'Tagestarif', ru:'Тариф на день'},
+    over_4h:{ar:'أكثر من 4 ساعات = سعر يوم كامل', en:'Over 4h = full day rate', es:'Más de 4h = día completo', fr:'Plus de 4h = journée', it:'Oltre 4h = giornata', pt:'Mais de 4h = dia inteiro', zh:'超过4小时=全天', ja:'4時間超=1日料金', ko:'4시간 초과 = 하루 요금', de:'Über 4h = Tagestarif', ru:'Более 4ч = день'},
 
   };
   var langs = Object.keys(T);
