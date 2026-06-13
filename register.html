@@ -1132,11 +1132,32 @@ async function submitRegistration() {
   };
 
   try {
-    // 1. Create Supabase auth account
-    if (window.db && window._sb) {
-      await window.db.signUp(email, pass, name, 'provider');
+    // 1. Insert application into Supabase providers table (status: pending)
+    //    so the admin sees it from ANY device.
+    if (window._sb) {
+      try {
+        await window._sb.from('providers').insert({
+          name:                   appData.name,
+          name_en:                appData.nameEn,
+          phone:                  appData.phone,
+          city:                   appData.city,
+          gender:                 appData.gender,
+          bio:                    appData.bio,
+          languages:              appData.langs,
+          service_types:          appData.serviceTypes,
+          offers:                 appData.serviceTypes,
+          specializations:        appData.specs ? appData.specs.split(',').map(function(s){return s.trim();}) : [],
+          price_hourly_no_car:    appData.pricing.hourly_no_car,
+          price_hourly_with_car:  appData.pricing.hourly_with_car,
+          price_fullday_no_car:   appData.pricing.fullday_no_car,
+          price_fullday_with_car: appData.pricing.fullday_with_car,
+          license_number:         appData.licenseNum,
+          status:                 'pending',
+          verified:               false
+        });
+      } catch(insErr) { console.log('Provider insert error:', insErr); }
     }
-    // 2. Save application to localStorage (Supabase insert happens after auth confirms)
+    // 2. Also save locally as backup
     const apps = JSON.parse(localStorage.getItem('lancul_applications') || '[]');
     apps.push({ ...appData, id: Date.now().toString(), createdAt: new Date().toISOString() });
     localStorage.setItem('lancul_applications', JSON.stringify(apps));
