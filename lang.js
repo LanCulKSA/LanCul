@@ -250,6 +250,14 @@ const T = {
     full_day_applied:{ar:'تم تطبيق سعر اليوم الكامل', en:'Full day rate applied', es:'Tarifa día completo', fr:'Tarif journée', it:'Tariffa giornaliera', pt:'Tarifa dia inteiro', zh:'全天费率', ja:'1日料金適用', ko:'하루 요금 적용', de:'Tagestarif', ru:'Тариф на день'},
     over_4h:{ar:'أكثر من 4 ساعات = سعر يوم كامل', en:'Over 4h = full day rate', es:'Más de 4h = día completo', fr:'Plus de 4h = journée', it:'Oltre 4h = giornata', pt:'Mais de 4h = dia inteiro', zh:'超过4小时=全天', ja:'4時間超=1日料金', ko:'4시간 초과 = 하루 요금', de:'Über 4h = Tagestarif', ru:'Более 4ч = день'},
 
+    welcome_back:{ar:"مرحباً بعودتك", en:"Welcome back!", es:"Bienvenido de nuevo!", fr:"Bon retour !", it:"Bentornato!", pt:"Bem-vindo de volta!", zh:"欢迎回来", ja:"おかえりなさい", ko:"다시 오신 걸 환영합니다", de:"Willkommen zurueck!", ru:"С возвращением"},
+
+    welcome:{ar:"مرحباً", en:"Welcome", es:"Bienvenido", fr:"Bienvenue", it:"Benvenuto", pt:"Bem-vindo", zh:"欢迎", ja:"ようこそ", ko:"환영합니다", de:"Willkommen", ru:"Добро пожаловать"},
+
+    provider_signup_note:{ar:"مقدمو الخدمة يسجلون عبر نموذج تفصيلي. اضغط بالأسفل للبدء.", en:"Service providers register through a detailed application. Click below to start.", es:"Los proveedores usan una solicitud detallada.", fr:"Les prestataires utilisent un formulaire detaille.", it:"I fornitori usano una domanda dettagliata.", pt:"Os prestadores usam um formulario detalhado.", zh:"服务商通过详细申请注册", ja:"サービス提供者は詳細な申請で登録します", ko:"서비스 제공자는 상세 신청서로 등록합니다", de:"Anbieter registrieren ueber ein Formular.", ru:"Поставщики регистрируются через форму."},
+
+    go_to_registration:{ar:"الذهاب لتسجيل مقدمي الخدمة", en:"Go to Provider Registration", es:"Registro de proveedores", fr:"Inscription prestataire", it:"Registrazione fornitori", pt:"Registro de prestador", zh:"前往服务商注册", ja:"プロバイダー登録へ", ko:"제공자 등록으로", de:"Zur Anbieter-Registrierung", ru:"Регистрация поставщика"},
+
   };
   var langs = Object.keys(T);
   for (var i = 0; i < langs.length; i++) {

@@ -289,8 +289,14 @@ function selRole(role) {
   _selectedRole = role;
   var cc = document.getElementById('roleClient');
   var cp = document.getElementById('roleProvider');
-  if (cc) cc.classList.toggle('on', role === 'client');
-  if (cp) cp.classList.toggle('on', role === 'provider');
+  var ON  = 'flex:1;padding:10px;border:1.5px solid #E8506A;border-radius:10px;background:rgba(232,80,106,.08);color:#E8506A;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700';
+  var OFF = 'flex:1;padding:10px;border:1.5px solid #EEF0F7;border-radius:10px;background:white;color:#3D4466;cursor:pointer;font-family:inherit;font-size:13px';
+  if (cc) cc.style.cssText = (role==='client')   ? ON : OFF;
+  if (cp) cp.style.cssText = (role==='provider') ? ON : OFF;
+
+  // Show provider note: providers register via the full application form
+  var note = document.getElementById('providerNote');
+  if (note) note.style.display = (role==='provider') ? 'block' : 'none';
 }
 
 function openAuth(mode) {
@@ -347,6 +353,15 @@ function openAuth(mode) {
     roleWrap.appendChild(roleLabel);
     roleWrap.appendChild(roleBtns);
     modal.appendChild(roleWrap);
+
+    // Provider note (hidden until provider selected)
+    var note = document.createElement('div');
+    note.id = 'providerNote';
+    note.style.cssText = 'display:none;background:rgba(245,134,62,.1);border:1px solid rgba(245,134,62,.25);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#9a5b1f;line-height:1.6';
+    note.innerHTML = (t('provider_signup_note') || 'Service providers register through a detailed application. Click below to start.')
+      + '<button type="button" onclick="closeModal();window.location.href=\'register.html\'" style="display:block;width:100%;margin-top:8px;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:8px;padding:9px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">'
+      + (t('go_to_registration') || 'Go to Provider Registration') + '</button>';
+    modal.appendChild(note);
   }
 
   // Name field (signup only)
@@ -425,8 +440,13 @@ async function doAuth(mode) {
   try {
     if (window.db && window._sb) {
       if (mode === 'signup') {
+        if (_selectedRole === 'provider') {
+          closeModal();
+          window.location.href = 'register.html';
+          return;
+        }
         var name = document.getElementById('authName') ? document.getElementById('authName').value.trim() : email.split('@')[0];
-        await window.db.signUp(email, pass, name, _selectedRole || 'client');
+        await window.db.signUp(email, pass, name, 'client');
         toast(t('signup_success') || 'Account created! Check your email ✅');
       } else {
         await window.db.signIn(email, pass);
@@ -434,9 +454,14 @@ async function doAuth(mode) {
       }
     } else {
       // localStorage fallback
+      if (mode==='signup' && _selectedRole==='provider') {
+        closeModal();
+        window.location.href = 'register.html';
+        return;
+      }
       var name2 = (document.getElementById('authName') && document.getElementById('authName').value.trim()) || email.split('@')[0];
-      setUser({ name: name2, email: email, role: mode==='signup' ? (_selectedRole||'client') : 'client' });
-      toast('Welcome ' + name2 + '! 🎉');
+      setUser({ name: name2, email: email, role: 'client' });
+      toast((t('welcome')||'Welcome') + ' ' + name2 + '! 🎉');
     }
     closeModal();
     setTimeout(function(){
