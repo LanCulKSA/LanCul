@@ -258,6 +258,14 @@ const T = {
 
     go_to_registration:{ar:"الذهاب لتسجيل مقدمي الخدمة", en:"Go to Provider Registration", es:"Registro de proveedores", fr:"Inscription prestataire", it:"Registrazione fornitori", pt:"Registro de prestador", zh:"前往服务商注册", ja:"プロバイダー登録へ", ko:"제공자 등록으로", de:"Zur Anbieter-Registrierung", ru:"Регистрация поставщика"},
 
+    forgot_password:{ar:"نسيت كلمة المرور؟", en:"Forgot password?", es:"Olvidaste la contrasena?", fr:"Mot de passe oublie ?", it:"Password dimenticata?", pt:"Esqueceu a senha?", zh:"忘记密码？", ja:"パスワードをお忘れですか？", ko:"비밀번호를 잊으셨나요?", de:"Passwort vergessen?", ru:"Забыли пароль?"},
+
+    enter_email_first:{ar:"أدخل بريدك الإلكتروني أولاً", en:"Enter your email first", es:"Ingrese su correo primero", fr:"Entrez d abord votre email", it:"Inserisci prima la tua email", pt:"Digite seu e-mail primeiro", zh:"请先输入邮箱", ja:"まずメールを入力", ko:"먼저 이메일을 입력하세요", de:"Zuerst E-Mail eingeben", ru:"Сначала введите почту"},
+
+    reset_sent:{ar:"تم إرسال رابط استعادة كلمة المرور إلى بريدك", en:"Password reset link sent to your email", es:"Enlace de restablecimiento enviado", fr:"Lien de reinitialisation envoye", it:"Link di reset inviato", pt:"Link de redefinicao enviado", zh:"重置链接已发送到您的邮箱", ja:"パスワードリセットリンクを送信しました", ko:"비밀번호 재설정 링크를 보냈습니다", de:"Link zum Zuruecksetzen gesendet", ru:"Ссылка для сброса отправлена"},
+
+    reset_error:{ar:"تعذر إرسال البريد", en:"Could not send reset email", es:"No se pudo enviar", fr:"Impossible d envoyer", it:"Impossibile inviare", pt:"Nao foi possivel enviar", zh:"无法发送邮件", ja:"メールを送信できませんでした", ko:"이메일을 보낼 수 없습니다", de:"Konnte nicht senden", ru:"Не удалось отправить"},
+
   };
   var langs = Object.keys(T);
   for (var i = 0; i < langs.length; i++) {

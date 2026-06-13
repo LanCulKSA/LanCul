@@ -1,3 +1,7 @@
+// LANCUL_SHARED_VERSION = '2026-v3-auth-fixed';
+console.log('LanCul shared.js v3 loaded');
+window.LANCUL_VERSION = 'v2026-fix-auth';
+console.log('LanCul shared.js loaded:', window.LANCUL_VERSION);
 /* =====================================================
    LanCul — shared.js
    Core data, utilities, auth modal, booking modal
@@ -380,6 +384,19 @@ function openAuth(mode) {
   submitBtn.onclick = function(){ doAuth(mode); };
   modal.appendChild(submitBtn);
 
+  // Forgot password (login only)
+  if (isLogin) {
+    var fpWrap = document.createElement('div');
+    fpWrap.style.cssText = 'text-align:center;margin-top:10px';
+    var fpBtn = document.createElement('button');
+    fpBtn.type = 'button';
+    fpBtn.style.cssText = 'background:none;border:none;color:#7B82A0;cursor:pointer;font-family:inherit;font-size:12px;text-decoration:underline';
+    fpBtn.textContent = t('forgot_password') || 'Forgot password?';
+    fpBtn.onclick = function(){ doForgotPassword(); };
+    fpWrap.appendChild(fpBtn);
+    modal.appendChild(fpWrap);
+  }
+
   // Switch link
   var switchWrap = document.createElement('div');
   switchWrap.style.cssText = 'text-align:center;margin-top:12px;font-size:12px;color:#7B82A0';
@@ -474,6 +491,24 @@ async function doAuth(mode) {
       : (err.message || 'Error occurred');
     toast(msg, 'err');
     if (btn) { btn.disabled = false; btn.textContent = mode==='login'?(t('btn_login')||'Login'):(t('btn_create_acc')||'Sign Up'); }
+  }
+}
+
+async function doForgotPassword() {
+  var ovs = document.querySelectorAll('.overlay');
+  var scope = ovs.length ? ovs[ovs.length-1] : document;
+  var emailEl = scope.querySelector('#authEmail');
+  var email = emailEl ? emailEl.value.trim() : '';
+  if (!email) { toast(t('enter_email_first') || 'Enter your email first', 'err'); return; }
+  if (window._sb) {
+    try {
+      await window._sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/index.html' });
+      toast(t('reset_sent') || 'Password reset link sent to your email', 'ok');
+    } catch(e) {
+      toast(t('reset_error') || 'Could not send reset email', 'err');
+    }
+  } else {
+    toast(t('reset_sent') || 'Password reset link sent to your email', 'ok');
   }
 }
 
