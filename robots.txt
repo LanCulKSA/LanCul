@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /client.html
+
+Sitemap: https://lanculksa.github.io/LanCul/sitemap.xml
+
+# LanCul — لانكول
+# Contact: info@lancul.net

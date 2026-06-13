@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LanCul Admin</title>
+<link rel="stylesheet" href="shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sora',sans-serif;background:#F0F2F5;color:#0D1B3E;min-height:100vh;}
+.app{display:flex;min-height:100vh;}
+.sb{width:220px;background:#0D1B3E;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;z-index:100;}
+.sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;color:white;}
+.sb-logo span{color:#E8506A;}
+.sb-nav{padding:10px 8px;flex:1;}
+.sn{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;transition:all .15s;margin-bottom:1px;border:none;background:none;font-family:'Sora',sans-serif;width:100%;text-align:left;position:relative;}
+.sn:hover{background:rgba(255,255,255,.07);color:white;}
+.sn.on{background:rgba(232,80,106,.15);color:#E8506A;}
+.snb{position:absolute;right:10px;background:#E8506A;color:white;border-radius:10px;font-size:9px;font-weight:700;padding:1px 6px;}
+.main{flex:1;margin-left:220px;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:white;padding:12px 24px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar h1{font-size:16px;font-weight:700;}
+.content{padding:20px 24px;flex:1;}
+.login-wrap{min-height:100vh;background:linear-gradient(145deg,#040b18,#0D1B3E);display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:36px 30px;width:100%;max-width:380px;text-align:center;}
+.lfi{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;color:white;font-family:'Sora',sans-serif;font-size:14px;outline:none;margin-bottom:12px;text-align:left;}
+.lfi:focus{border-color:#E8506A;}
+.lfi::placeholder{color:rgba(255,255,255,.25);}
+.lbtn{width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:10px;padding:12px;font-family:'Sora',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.card{background:white;border-radius:12px;box-shadow:0 1px 8px rgba(0,0,0,.07);margin-bottom:16px;overflow:hidden;}
+.card-head{padding:14px 18px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:14px;font-weight:700;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px;}
+.kpi{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 8px rgba(0,0,0,.07);border-top:3px solid #E5E7EB;}
+.kpi.pk{border-top-color:#E8506A;} .kpi.gn{border-top-color:#2ECC8E;} .kpi.or{border-top-color:#F5863E;} .kpi.bl{border-top-color:#4A90E2;} .kpi.yl{border-top-color:#F5C842;}
+.kpi-n{font-size:28px;font-weight:900;} .kpi.pk .kpi-n{color:#E8506A;} .kpi.gn .kpi-n{color:#2ECC8E;} .kpi.or .kpi-n{color:#F5863E;} .kpi.bl .kpi-n{color:#4A90E2;} .kpi.yl .kpi-n{color:#8a6d00;}
+.kpi-l{font-size:11px;color:#9CA3AF;margin-top:3px;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;padding:10px 16px;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;border-bottom:1px solid #F3F4F6;}
+.tbl td{padding:12px 16px;font-size:13px;border-bottom:1px solid #F9FAFB;vertical-align:top;}
+.tbl tr:hover td{background:#F9FAFB;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:600;}
+.b-pending{background:rgba(245,200,66,.12);color:#8a6d00;} .b-active{background:rgba(46,204,142,.12);color:#1a7a55;} .b-confirmed{background:rgba(46,204,142,.12);color:#1a7a55;} .b-rejected,.b-cancelled{background:rgba(231,76,60,.1);color:#c0392b;} .b-completed{background:rgba(74,144,226,.12);color:#2d6abf;} .b-call_done{background:rgba(74,144,226,.12);color:#2d6abf;} .b-new{background:rgba(245,200,66,.12);color:#8a6d00;}
+.app-card{border:1.5px solid #E5E7EB;border-radius:12px;padding:16px;margin-bottom:12px;}
+.app-card.pending{border-color:rgba(245,200,66,.4);background:rgba(245,200,66,.02);}
+.app-card.active{border-color:rgba(46,204,142,.3);}
+.app-card.rejected{opacity:.65;}
+.app-av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#E8506A,#F5863E);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 14px;border-radius:8px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn-p{background:linear-gradient(135deg,#E8506A,#F5863E);color:white;} .btn-g{background:#2ECC8E;color:white;} .btn-r{background:rgba(231,76,60,.1);color:#c0392b;border:1px solid rgba(231,76,60,.2);} .btn-b{background:rgba(74,144,226,.1);color:#2d6abf;border:1px solid rgba(74,144,226,.2);} .btn-ghost{background:#F3F4F6;color:#4B5563;border:1px solid #E5E7EB;}
+.btn:hover{opacity:.88;}
+.ftab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #E5E7EB;background:white;color:#6B7280;font-family:'Sora',sans-serif;margin-right:6px;margin-bottom:6px;}
+.ftab.on{background:#0D1B3E;color:white;border-color:#0D1B3E;}
+.chat-grid{display:grid;grid-template-columns:260px 1fr;gap:0;height:560px;overflow:hidden;}
+.chat-left{border-right:1px solid #E5E7EB;overflow-y:auto;}
+.chat-right{overflow-y:auto;background:#F9FAFB;padding:14px;}
+.ci{padding:11px 14px;cursor:pointer;border-bottom:1px solid #F9FAFB;font-size:12px;}
+.ci:hover{background:#F3F4F6;}
+.ci.sel{background:#EEF2FF;}
+.mb{background:white;border-radius:10px;padding:8px 12px;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);max-width:85%;margin-bottom:8px;}
+.mb.flagged{background:#FEF2F2;border:1px solid #FECACA;}
+.alert-item{border:1.5px solid rgba(239,68,68,.2);border-radius:10px;padding:14px;margin-bottom:10px;background:rgba(239,68,68,.02);}
+.empty{text-align:center;padding:40px 20px;color:#9CA3AF;}
+#tw{position:fixed;bottom:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:340px;}
+.toast{background:#0D1B3E;color:white;padding:10px 15px;border-radius:10px;font-size:13px;box-shadow:0 6px 28px rgba(0,0,0,.4);animation:su .3s;border-left:4px solid #2ECC8E;}
+.toast.err{border-left-color:#E8506A;}
+@keyframes su{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div id="loginWrap">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div style="font-size:32px;margin-bottom:10px">🔐</div>
+      <h2 style="color:white;font-size:20px;font-weight:800;margin-bottom:4px">Admin Dashboard</h2>
+      <p style="color:rgba(255,255,255,.4);font-size:13px;margin-bottom:24px">LanCul — Internal Access Only</p>
+      <input class="lfi" id="adminPass" type="password" placeholder="Admin password" onkeydown="if(event.key==='Enter')doAdminLogin()">
+      <div id="loginErr" style="color:#ff6b6b;font-size:12px;margin-bottom:8px;display:none">Incorrect password</div>
+      <button class="lbtn" onclick="doAdminLogin()">Enter Dashboard</button>
+    </div>
+  </div>
+</div>
+
+<div id="dashWrap" style="display:none" class="app">
+  <div class="sb">
+    <div class="sb-logo">LC <span>Admin</span></div>
+    <div class="sb-nav">
+      <button class="sn on"  data-tab="overview"    onclick="gTab('overview',this)">&#128202; Overview</button>
+      <button class="sn"     data-tab="providers"   onclick="gTab('providers',this)">&#128101; Providers <span class="snb" id="provBadge" style="display:none">0</span></button>
+      <button class="sn"     data-tab="bookings"    onclick="gTab('bookings',this)">&#128197; Bookings <span class="snb" id="bkBadge" style="display:none">0</span></button>
+      <button class="sn"     data-tab="chats"       onclick="gTab('chats',this)">&#128172; Chat Monitor <span class="snb" id="chatAlertBadge" style="display:none">!</span></button>
+      <button class="sn"     data-tab="rfq"         onclick="gTab('rfq',this)">&#128203; RFQ / B2B <span class="snb" id="rfqBadge" style="display:none">0</span></button>
+      <button class="sn"     data-tab="marketplace" onclick="gTab('marketplace',this)">&#127978; Marketplace</button>
+      <button class="sn"     data-tab="experiences" onclick="gTab('experiences',this)">&#127917; Experiences</button>
+      <button class="sn"     data-tab="settings"    onclick="gTab('settings',this)">&#9881; Settings</button>
+    </div>
+    <div style="padding:14px;border-top:1px solid rgba(255,255,255,.07)">
+      <button onclick="doAdminLogout()" style="background:rgba(255,255,255,.05);border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;padding:6px 10px;border-radius:6px;font-family:'Sora',sans-serif;width:100%">Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="tabTitle">Overview</h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a href="index.html" class="btn btn-ghost" style="font-size:11px">Site</a>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <div id="t-overview">
+        <div class="kpi-grid">
+          <div class="kpi pk"><div class="kpi-n" id="kpiProviders">0</div><div class="kpi-l">Active Providers</div></div>
+          <div class="kpi gn"><div class="kpi-n" id="kpiBookings">0</div><div class="kpi-l">Total Bookings</div></div>
+          <div class="kpi or"><div class="kpi-n" id="kpiRevenue">0</div><div class="kpi-l">Revenue (SAR)</div></div>
+          <div class="kpi bl"><div class="kpi-n" id="kpiCommission">0</div><div class="kpi-l">Commission (SAR)</div></div>
+          <div class="kpi yl"><div class="kpi-n" id="kpiPending">0</div><div class="kpi-l">Pending Apps</div></div>
+          <div class="kpi bl"><div class="kpi-n" id="kpiRFQ">0</div><div class="kpi-l">Open RFQs</div></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Recent Bookings</span><button class="btn btn-ghost" onclick="gTab('bookings',document.querySelector('[data-tab=bookings]'))">View All</button></div>
+          <table class="tbl"><thead><tr><th>Client</th><th>Provider</th><th>Service</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="recentBkBody"><tr><td colspan="6" style="text-align:center;padding:24px;color:#9CA3AF">Loading...</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- PROVIDERS -->
+      <div id="t-providers" style="display:none">
+        <div style="margin-bottom:14px">
+          <button class="ftab on" onclick="filterProviders('pending',this)">Pending <span id="pendingCount"></span></button>
+          <button class="ftab" onclick="filterProviders('call_done',this)">Call Done</button>
+          <button class="ftab" onclick="filterProviders('active',this)">Active</button>
+          <button class="ftab" onclick="filterProviders('rejected',this)">Rejected</button>
+          <button class="ftab" onclick="filterProviders('all',this)">All</button>
+        </div>
+        <div id="providersList"></div>
+      </div>
+
+      <!-- BOOKINGS -->
+      <div id="t-bookings" style="display:none">
+        <div style="margin-bottom:14px">
+          <button class="ftab on" onclick="filterBk('all',this)">All</button>
+          <button class="ftab" onclick="filterBk('pending',this)">Pending</button>
+          <button class="ftab" onclick="filterBk('confirmed',this)">Confirmed</button>
+          <button class="ftab" onclick="filterBk('active',this)">Active</button>
+          <button class="ftab" onclick="filterBk('completed',this)">Completed</button>
+        </div>
+        <div class="card">
+          <table class="tbl"><thead><tr><th>Client</th><th>Provider</th><th>Service</th><th>Date</th><th>Hours</th><th>Total</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="bkTableBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- CHAT MONITOR -->
+      <div id="t-chats" style="display:none">
+        <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="loadChats('all')">All Chats</button>
+          <button class="btn btn-r" onclick="loadChats('flagged')">Flagged</button>
+          <button class="btn btn-ghost" onclick="loadChats()">Refresh</button>
+          <span id="alertCount" style="font-size:12px;color:#9CA3AF;align-self:center"></span>
+        </div>
+        <div id="secAlerts" style="margin-bottom:14px"></div>
+        <div class="card" style="overflow:hidden">
+          <div class="chat-grid">
+            <div class="chat-left">
+              <div style="padding:10px 14px;border-bottom:1px solid #F3F4F6;font-size:12px;font-weight:600;color:#6B7280">Conversations</div>
+              <div id="chatListEl"><div class="empty"><p>Click "All Chats" to load</p></div></div>
+            </div>
+            <div class="chat-right" id="chatMsgsEl"><div class="empty"><p>Select a conversation</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ -->
+      <div id="t-rfq" style="display:none">
+        <div style="margin-bottom:14px">
+          <button class="ftab on" onclick="filterRFQ('new',this)">New</button>
+          <button class="ftab" onclick="filterRFQ('quoted',this)">Quoted</button>
+          <button class="ftab" onclick="filterRFQ('all',this)">All</button>
+        </div>
+        <div id="rfqList"></div>
+      </div>
+
+      <!-- MARKETPLACE -->
+      <div id="t-marketplace" style="display:none">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Marketplace Listings</span><button class="btn btn-p" onclick="toast('Add listing - coming soon')">+ Add</button></div>
+          <table class="tbl"><thead><tr><th>Name</th><th>Category</th><th>City</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="mktBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- EXPERIENCES -->
+      <div id="t-experiences" style="display:none">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Experiences</span><button class="btn btn-p" onclick="toast('Add experience - coming soon')">+ Add</button></div>
+          <table class="tbl"><thead><tr><th>Title</th><th>City</th><th>Hours</th><th>Price</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="expBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="t-settings" style="display:none">
+        <div class="card" style="max-width:480px">
+          <div class="card-head"><span class="card-title">Settings</span></div>
+          <div style="padding:18px">
+            <div style="margin-bottom:14px">
+              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">New Admin Password</label>
+              <input id="newPass" type="password" placeholder="Min 6 characters" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none">
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px">LanCul Commission %</label>
+              <input id="commPct" type="number" value="15" style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:9px 12px;font-family:'Sora',sans-serif;font-size:13px;outline:none">
+            </div>
+            <button class="btn btn-p" onclick="saveSettings()" style="width:100%">Save Settings</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div id="tw"></div>
+
+<script src="lang.js"></script>
+<script src="supabase.js"></script>
+<script src="shared.js"></script>
+<script>
+// AUTH
+var PASS_KEY = 'lancul_admin_pass';
+function doAdminLogin() {
+  var pass = document.getElementById('adminPass').value;
+  var ok   = localStorage.getItem(PASS_KEY) || 'lancul2026';
+  if (pass === ok) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('dashWrap').style.display  = 'flex';
+    sessionStorage.setItem('admin_ok','1');
+    initDash();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+function doAdminLogout() {
+  sessionStorage.removeItem('admin_ok');
+  document.getElementById('dashWrap').style.display  = 'none';
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('adminPass').value = '';
+}
+
+// TABS
+var TAB_LABELS = {overview:'Overview',providers:'Providers',bookings:'Bookings',chats:'Chat Monitor',rfq:'RFQ / B2B',marketplace:'Marketplace',experiences:'Experiences',settings:'Settings'};
+function gTab(name, btn) {
+  document.querySelectorAll('[id^="t-"]').forEach(function(el){ el.style.display='none'; });
+  document.querySelectorAll('.sn').forEach(function(b){ b.classList.remove('on'); });
+  document.getElementById('t-'+name).style.display = 'block';
+  if (btn) btn.classList.add('on');
+  document.getElementById('tabTitle').textContent = TAB_LABELS[name]||name;
+  if (name==='providers')   loadProviders();
+  if (name==='bookings')    loadBookings();
+  if (name==='rfq')         loadRFQs();
+  if (name==='marketplace') loadMarketplace();
+  if (name==='experiences') loadExperiences();
+  if (name==='chats')       loadSecAlerts();
+}
+
+// INIT
+function initDash() {
+  loadOverview();
+  if (window._sb) subscribeAlerts();
+}
+
+// OVERVIEW
+async function loadOverview() {
+  var bks=[], apps=[], rfqs=[];
+  if (window._sb) {
+    try { var r1=await window._sb.from('bookings').select('*').order('created_at',{ascending:false}).limit(200); if(r1.data) bks=r1.data; } catch(e){}
+    try { var r2=await window._sb.from('providers').select('*'); if(r2.data) apps=r2.data; } catch(e){}
+    try { var r3=await window._sb.from('rfqs').select('*'); if(r3.data) rfqs=r3.data; } catch(e){}
+  }
+  if (!bks.length)  bks  = JSON.parse(localStorage.getItem('lancul_bookings')||'[]');
+  if (!apps.length) apps = JSON.parse(localStorage.getItem('lancul_applications')||'[]');
+  if (!rfqs.length) rfqs = JSON.parse(localStorage.getItem('lancul_rfqs')||'[]');
+
+  var active  = apps.filter(function(a){ return a.status==='active'; }).length;
+  var pending = apps.filter(function(a){ return !a.status||a.status==='pending'; }).length;
+  var revenue = bks.reduce(function(s,b){ return s+(b.total||0); },0);
+  var comm    = bks.reduce(function(s,b){ return s+(b.commission_amount||b.commissionAmount||Math.round((b.total||0)*.15)); },0);
+  var openRFQ = rfqs.filter(function(r){ return r.status==='new'||!r.status; }).length;
+
+  document.getElementById('kpiProviders').textContent  = active;
+  document.getElementById('kpiBookings').textContent   = bks.length;
+  document.getElementById('kpiRevenue').textContent    = revenue.toLocaleString();
+  document.getElementById('kpiCommission').textContent = comm.toLocaleString();
+  document.getElementById('kpiPending').textContent    = pending;
+  document.getElementById('kpiRFQ').textContent        = openRFQ;
+
+  if (pending>0) { var pb=document.getElementById('provBadge'); pb.textContent=pending; pb.style.display='inline'; }
+  if (openRFQ>0) { var rb=document.getElementById('rfqBadge'); rb.textContent=openRFQ; rb.style.display='inline'; }
+
+  var SVC={guiding:'Guide',translation:'Translate',companion:'Companion',airport:'Airport'};
+  var tbody=document.getElementById('recentBkBody');
+  var recent=bks.slice(0,8);
+  if (!recent.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#9CA3AF">No bookings yet</td></tr>'; return; }
+  tbody.innerHTML=recent.map(function(b){
+    return '<tr><td style="font-weight:600">'+(b.clientName||b.client_name||'?')+'</td><td>'+(b.providerName||b.provider_name||'?')+'</td><td>'+(SVC[b.service]||b.service||'?')+'</td><td>'+(b.date||'?')+'</td><td style="font-weight:700;color:#E8506A">'+(b.total||0)+' SAR</td><td><span class="badge b-'+(b.status||'pending')+'">'+(b.status||'pending')+'</span></td></tr>';
+  }).join('');
+}
+
+// PROVIDERS
+var _apps=[], _provFilter='pending';
+async function loadProviders() {
+  if (window._sb) {
+    try { var r=await window._sb.from('providers').select('*').order('created_at',{ascending:false}); if(r.data) _apps=r.data; } catch(e){}
+  }
+  if (!_apps.length) _apps=JSON.parse(localStorage.getItem('lancul_applications')||'[]');
+  filterProviders(_provFilter);
+}
+
+function filterProviders(f, btn) {
+  _provFilter=f;
+  if (btn) { document.querySelectorAll('#t-providers .ftab').forEach(function(b){ b.classList.remove('on'); }); btn.classList.add('on'); }
+  var list = f==='all' ? _apps : _apps.filter(function(a){ return f==='pending'?(!a.status||a.status===f):a.status===f; });
+  var pc=document.getElementById('pendingCount');
+  if (pc) pc.textContent='('+_apps.filter(function(a){ return !a.status||a.status==='pending'; }).length+')';
+  renderApps(list);
+}
+
+function renderApps(list) {
+  var cont=document.getElementById('providersList');
+  if (!list.length) { cont.innerHTML='<div class="empty"><p>No providers in this category</p></div>'; return; }
+  var SVC={guiding:'Tour Guide',translation:'Translator',companion:'Companion',airport:'Airport'};
+  var html='';
+  for (var i=0;i<list.length;i++) {
+    var a=list[i];
+    var id=a.id||a.email||i;
+    var pend=!a.status||a.status==='pending';
+    var callDone=a.status==='call_done';
+    var svcs=(a.service_types||a.serviceTypes||a.offers||[]).map(function(s){ return SVC[s]||s; }).join(', ');
+    var langs=(a.languages||a.langs||[]).join(', ');
+    var guide=(a.service_types||a.serviceTypes||[]).includes('guiding');
+    html+='<div class="app-card '+(a.status||'pending')+'">';
+    html+='<div style="display:flex;gap:12px;flex-wrap:wrap">';
+    html+='<div class="app-av">'+(a.name||'?').slice(0,2)+'</div>';
+    html+='<div style="flex:1;min-width:180px">';
+    html+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">';
+    html+='<span style="font-weight:800;font-size:15px">'+(a.name||'?')+'</span>';
+    if(a.name_en||a.nameEn) html+='<span style="font-size:11px;color:#9CA3AF">'+(a.name_en||a.nameEn)+'</span>';
+    html+='<span class="badge b-'+(a.status||'pending')+'">'+(a.status||'pending')+'</span>';
+    if(guide) html+='<span style="background:#FEF9C3;color:#854D0E;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">Tour Guide</span>';
+    html+='</div>';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:#6B7280;margin-bottom:6px">';
+    html+='<span>Phone: '+(a.phone||'?')+'</span><span>Email: '+(a.email||'?')+'</span>';
+    html+='<span>City: '+(a.city||'?')+'</span><span>Date: '+(a.created_at?new Date(a.created_at).toLocaleDateString():a.createdAt?new Date(a.createdAt).toLocaleDateString():'?')+'</span></div>';
+    if(svcs) html+='<div style="font-size:12px;margin-bottom:3px"><b>Services:</b> '+svcs+'</div>';
+    if(langs) html+='<div style="font-size:12px;margin-bottom:3px"><b>Languages:</b> '+langs+'</div>';
+    if(a.bio) html+='<div style="font-size:12px;background:#F9FAFB;border-radius:8px;padding:8px;margin-top:5px">'+a.bio+'</div>';
+    if(a.license_number||a.licenseNum) html+='<div style="font-size:12px;margin-top:5px;background:#EFF6FF;border-radius:8px;padding:8px"><b>License:</b> '+(a.license_number||a.licenseNum)+'</div>';
+    html+='</div>';
+    html+='<div style="display:flex;flex-direction:column;gap:7px;flex-shrink:0">';
+    html+='<div style="background:#F9FAFB;border-radius:10px;padding:10px;font-size:11px;min-width:140px">';
+    html+='<b>Pricing (SAR)</b><br>No car: '+(a.price_hourly_no_car||120)+' / '+(a.price_fullday_no_car||650)+'<br>With car: '+(a.price_hourly_with_car||160)+' / '+(a.price_fullday_with_car||800)+'<br><span style="font-size:10px;color:#9CA3AF">hourly / full day</span></div>';
+    if(pend||callDone) html+='<div style="display:flex;gap:6px"><button class="btn btn-g ap-btn" data-id="'+id+'">Approve</button><button class="btn btn-r rj-btn" data-id="'+id+'">Reject</button></div>';
+    if(pend) html+='<button class="btn btn-b cl-btn" data-id="'+id+'" style="width:100%">Mark Call Done</button>';
+    html+='</div></div></div>';
+  }
+  cont.innerHTML=html;
+  cont.querySelectorAll('.ap-btn').forEach(function(b){ b.addEventListener('click', function(){ approveProvider(this.getAttribute('data-id')); }); });
+  cont.querySelectorAll('.rj-btn').forEach(function(b){ b.addEventListener('click', function(){ rejectProvider(this.getAttribute('data-id')); }); });
+  cont.querySelectorAll('.cl-btn').forEach(function(b){ b.addEventListener('click', function(){ markCallDone(this.getAttribute('data-id')); }); });
+}
+
+async function approveProvider(id) {
+  if (!confirm('Approve this provider?')) return;
+  if (window._sb) { try { await window._sb.from('providers').update({status:'active',verified:true}).eq('id',id); } catch(e){} }
+  _updateApp(id,{status:'active',verified:true}); toast('Provider approved'); loadProviders();
+}
+async function rejectProvider(id) {
+  var reason=prompt('Rejection reason:');
+  if (window._sb) { try { await window._sb.from('providers').update({status:'rejected',rejection_reason:reason||''}).eq('id',id); } catch(e){} }
+  _updateApp(id,{status:'rejected'}); toast('Provider rejected'); loadProviders();
+}
+async function markCallDone(id) {
+  if (window._sb) { try { await window._sb.from('providers').update({status:'call_done',call_verified:true}).eq('id',id); } catch(e){} }
+  _updateApp(id,{status:'call_done'}); toast('Call marked done'); loadProviders();
+}
+function _updateApp(id, updates) {
+  var apps=JSON.parse(localStorage.getItem('lancul_applications')||'[]');
+  var a=apps.find(function(x){ return x.id===id||x.email===id; });
+  if(a){ Object.assign(a,updates); localStorage.setItem('lancul_applications',JSON.stringify(apps)); }
+}
+
+// BOOKINGS
+var _bks=[];
+async function loadBookings() {
+  if (window._sb) { try { var r=await window._sb.from('bookings').select('*').order('created_at',{ascending:false}); if(r.data) _bks=r.data; } catch(e){} }
+  if (!_bks.length) _bks=JSON.parse(localStorage.getItem('lancul_bookings')||'[]');
+  filterBk('all');
+}
+function filterBk(f,btn) {
+  if(btn){ document.querySelectorAll('#t-bookings .ftab').forEach(function(b){ b.classList.remove('on'); }); btn.classList.add('on'); }
+  var list=f==='all'?_bks:_bks.filter(function(b){ return b.status===f; });
+  var SVC={guiding:'Guide',translation:'Trans',companion:'Comp',airport:'Airport'};
+  var tbody=document.getElementById('bkTableBody');
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:24px;color:#9CA3AF">No bookings</td></tr>'; return; }
+  tbody.innerHTML=list.map(function(b){
+    var fd=(b.hours||0)>4;
+    return '<tr><td style="font-weight:600">'+(b.clientName||b.client_name||'?')+'</td><td>'+(b.providerName||b.provider_name||'?')+'</td><td>'+(SVC[b.service]||b.service||'?')+'</td><td>'+(b.date||'?')+'</td><td>'+(fd?'Full day':(b.hours||'?')+'h')+(b.withCar||b.with_car?' car':'')+'</td><td style="font-weight:700;color:#E8506A">'+(b.total||0)+' SAR</td><td><span class="badge b-'+(b.status||'pending')+'">'+(b.status||'?')+'</span></td><td>'+(b.status==='pending'?'<button class="btn btn-g conf-btn" data-id="'+(b.id||'')+'" style="font-size:11px;padding:4px 8px">Confirm</button>':'')+'</td></tr>';
+  }).join('');
+  tbody.querySelectorAll('.conf-btn').forEach(function(btn){ btn.addEventListener('click', function(){ confirmBk(this.getAttribute('data-id')); }); });
+}
+async function confirmBk(id) {
+  var code=Math.floor(100000+Math.random()*900000).toString();
+  if(window._sb){ try { await window._sb.from('bookings').update({status:'confirmed',trip_code:code}).eq('id',id); } catch(e){} }
+  var bks=JSON.parse(localStorage.getItem('lancul_bookings')||'[]');
+  var bk=bks.find(function(b){ return b.id===id; });
+  if(bk){ bk.status='confirmed'; bk.tripCode=code; localStorage.setItem('lancul_bookings',JSON.stringify(bks)); }
+  toast('Confirmed - Code: '+code); loadBookings();
+}
+
+// CHATS
+var _chatSub=null;
+async function loadChats(filter) {
+  var chats=[];
+  if(window._sb){ try { var r=await window._sb.from('chats').select('*').order('created_at',{ascending:false}).limit(50); if(r.data) chats=r.data; } catch(e){} }
+  if(!chats.length) chats=JSON.parse(localStorage.getItem('lc_chats_list')||'[]');
+  loadSecAlerts();
+  var el=document.getElementById('chatListEl');
+  if(!chats.length){ el.innerHTML='<div class="empty"><p>No conversations yet</p></div>'; return; }
+  var html='';
+  for(var i=0;i<chats.length;i++){
+    var c=chats[i];
+    html+='<div class="ci open-chat" data-id="'+c.id+'" data-client="'+(c.client_name||'Client')+'" data-prov="'+(c.provider_name||'Provider')+'">';
+    html+='<div style="font-weight:600">'+(c.client_name||'Client')+' / '+(c.provider_name||'Provider')+'</div>';
+    html+='<div style="font-size:11px;color:#9CA3AF">'+(c.created_at?new Date(c.created_at).toLocaleDateString():'')+'</div></div>';
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('.open-chat').forEach(function(d){ d.addEventListener('click', function(){ openAdminChat(this.dataset.id, this.dataset.client, this.dataset.prov); }); });
+}
+
+async function openAdminChat(chatId, clientName, provName) {
+  document.querySelectorAll('.ci').forEach(function(el){ el.classList.remove('sel'); });
+  var msgs=[];
+  if(window._sb){ try { var r=await window._sb.from('messages').select('*').eq('chat_id',chatId).order('created_at',{ascending:true}); if(r.data) msgs=r.data; } catch(e){} }
+  var panel=document.getElementById('chatMsgsEl');
+  var header='<div style="font-size:12px;font-weight:600;color:#6B7280;border-bottom:1px solid #E5E7EB;padding-bottom:10px;margin-bottom:12px">'+clientName+' / '+provName+' <span style="font-size:10px;background:#EFF6FF;color:#2d6abf;border-radius:4px;padding:2px 8px;margin-left:6px">Read Only</span></div>';
+  if(!msgs.length){ panel.innerHTML=header+'<div class="empty"><p>No messages</p></div>'; return; }
+  var html=header;
+  msgs.forEach(function(m){
+    html+='<div class="mb'+(m.flagged?' flagged':'')+'"><div style="font-size:10px;color:#9CA3AF;margin-bottom:3px">'+(m.sender_id||'?')+' '+( m.created_at?new Date(m.created_at).toLocaleTimeString():'')+'</div>';
+    if(m.flagged) html+='<div style="font-size:10px;color:#EF4444;margin-bottom:3px">Flagged: '+(m.flag_type||'contact')+'</div>';
+    html+='<div>'+(m.text||'[image]')+'</div></div>';
+  });
+  panel.innerHTML=html;
+  panel.scrollTop=panel.scrollHeight;
+  if(window._sb){
+    if(_chatSub) window._sb.removeChannel(_chatSub);
+    _chatSub=window._sb.channel('achat_'+chatId).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'chat_id=eq.'+chatId},function(p){
+      var m=p.new;
+      var div=document.createElement('div');
+      div.className='mb'+(m.flagged?' flagged':'');
+      div.innerHTML='<div style="font-size:10px;color:#9CA3AF">just now</div>'+(m.flagged?'<div style="font-size:10px;color:#EF4444">Flagged: '+(m.flag_type||'')+'</div>':'')+'<div>'+(m.text||'[image]')+'</div>';
+      panel.appendChild(div); panel.scrollTop=panel.scrollHeight;
+      if(m.flagged) toast('Flagged message!','err');
+    }).subscribe();
+  }
+}
+
+async function loadSecAlerts() {
+  var alerts=[];
+  if(window._sb){ try { var r=await window._sb.from('admin_alerts').select('*').eq('resolved',false).order('created_at',{ascending:false}).limit(10); if(r.data) alerts=r.data; } catch(e){} }
+  if(!alerts.length) alerts=JSON.parse(localStorage.getItem('lc_admin_alerts')||'[]').filter(function(a){ return !a.resolved; });
+  var badge=document.getElementById('chatAlertBadge');
+  if(badge){ badge.textContent=alerts.length||'!'; badge.style.display=alerts.length?'inline':'none'; }
+  var count=document.getElementById('alertCount'); if(count) count.textContent=alerts.length+' unresolved alerts';
+  var el=document.getElementById('secAlerts');
+  if(!alerts.length){ el.innerHTML=''; return; }
+  el.innerHTML=alerts.slice(0,3).map(function(al){
+    return '<div class="alert-item"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-weight:700;color:#EF4444">'+( al.flag_type||'Contact Shared')+'</span><span style="font-size:11px;color:#9CA3AF">'+(al.created_at?new Date(al.created_at).toLocaleString():'')+'</span></div><div style="font-size:12px;margin-bottom:4px">From: '+(al.from_name||'?')+'</div><div style="font-size:12px;margin-bottom:8px">Detected: <code style="background:#FEE2E2;padding:2px 6px;border-radius:4px">'+(al.flag_value||'?')+'</code></div><button class="btn btn-ghost" style="font-size:11px" data-aid="'+al.id+'">Mark Resolved</button></div>';
+  }).join('');
+  el.querySelectorAll('[data-aid]').forEach(function(btn){ btn.addEventListener('click', function(){ resolveAlert(this.getAttribute('data-aid')); }); });
+}
+
+async function resolveAlert(id) {
+  if(window._sb){ try { await window._sb.from('admin_alerts').update({resolved:true}).eq('id',id); } catch(e){} }
+  var a=JSON.parse(localStorage.getItem('lc_admin_alerts')||'[]');
+  var al=a.find(function(x){ return x.id===id; }); if(al){ al.resolved=true; localStorage.setItem('lc_admin_alerts',JSON.stringify(a)); }
+  toast('Resolved'); loadSecAlerts();
+}
+
+function subscribeAlerts() {
+  if(!window._sb) return;
+  window._sb.channel('admin_alerts_live').on('postgres_changes',{event:'INSERT',schema:'public',table:'admin_alerts'},function(p){
+    toast('New security alert: '+(p.new.flag_type||'contact'),'err');
+    loadSecAlerts();
+  }).subscribe();
+}
+
+// RFQ
+var _rfqs=[];
+async function loadRFQs() {
+  if(window._sb){ try { var r=await window._sb.from('rfqs').select('*').order('created_at',{ascending:false}); if(r.data) _rfqs=r.data; } catch(e){} }
+  if(!_rfqs.length) _rfqs=JSON.parse(localStorage.getItem('lancul_rfqs')||'[]');
+  filterRFQ('new');
+}
+function filterRFQ(f,btn) {
+  if(btn){ document.querySelectorAll('#t-rfq .ftab').forEach(function(b){ b.classList.remove('on'); }); btn.classList.add('on'); }
+  var list=f==='all'?_rfqs:_rfqs.filter(function(r){ return r.status===f||(!r.status&&f==='new'); });
+  var el=document.getElementById('rfqList');
+  if(!list.length){ el.innerHTML='<div class="empty"><p>No RFQs</p></div>'; return; }
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var r=list[i];
+    html+='<div class="card" style="margin-bottom:12px"><div style="padding:14px 18px">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div><div style="font-weight:700;font-size:14px">'+(r.company||r.contact_name||'Company')+'</div><div style="font-size:12px;color:#6B7280">'+(r.event_type||'General')+' &middot; '+(r.city||'?')+'</div></div><span class="badge b-'+(r.status||'new')+'">'+(r.status||'new')+'</span></div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;font-size:12px;margin-bottom:10px"><span>Langs: '+(r.langs||'?')+'</span><span>Persons: '+(r.persons||'?')+'</span><span>Days: '+(r.duration_days||'?')+'</span><span>Budget: '+(r.budget?r.budget+' SAR':'?')+'</span><span>Date: '+(r.event_date||'?')+'</span><span>Contact: '+(r.contact_email||'?')+'</span></div>';
+    if(r.description) html+='<div style="font-size:12px;color:#374151;background:#F9FAFB;border-radius:8px;padding:8px;margin-bottom:10px">'+r.description+'</div>';
+    html+='<div style="display:flex;gap:6px"><button class="btn btn-p quote-btn" data-id="'+(r.id||i)+'">Send Quote</button><button class="btn btn-ghost close-btn" data-id="'+(r.id||i)+'">Close</button></div>';
+    html+='</div></div>';
+  }
+  el.innerHTML=html;
+  el.querySelectorAll('.quote-btn').forEach(function(b){ b.addEventListener('click', function(){ quoteRFQ(this.getAttribute('data-id')); }); });
+  el.querySelectorAll('.close-btn').forEach(function(b){ b.addEventListener('click', function(){ closeRFQ(this.getAttribute('data-id')); }); });
+}
+async function quoteRFQ(id) {
+  var price=prompt('Quote price (SAR):'); if(!price) return;
+  if(window._sb){ try { await window._sb.from('rfqs').update({status:'quoted',final_price:parseInt(price),quoted_at:new Date().toISOString()}).eq('id',id); } catch(e){} }
+  var rfqs=JSON.parse(localStorage.getItem('lancul_rfqs')||'[]');
+  var rfq=rfqs.find(function(r){ return r.id===id; }); if(rfq){ rfq.status='quoted'; rfq.final_price=parseInt(price); localStorage.setItem('lancul_rfqs',JSON.stringify(rfqs)); }
+  toast('Quote sent: '+price+' SAR'); loadRFQs();
+}
+async function closeRFQ(id) {
+  if(window._sb){ try { await window._sb.from('rfqs').update({status:'closed'}).eq('id',id); } catch(e){} }
+  toast('RFQ closed'); loadRFQs();
+}
+
+// MARKETPLACE & EXPERIENCES
+async function loadMarketplace() {
+  var items=[];
+  if(window._sb){ try { var r=await window._sb.from('marketplace').select('*'); if(r.data) items=r.data; } catch(e){} }
+  if(!items.length && typeof MARKETPLACE!=='undefined') items=MARKETPLACE;
+  var tbody=document.getElementById('mktBody');
+  if(!items.length){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:24px;color:#9CA3AF">No listings</td></tr>'; return; }
+  tbody.innerHTML=items.map(function(m){ return '<tr><td><b>'+(m.name||'?')+'</b><br><span style="font-size:11px;color:#9CA3AF">'+(m.name_en||m.nameEn||'')+'</span></td><td>'+(m.category||m.cat||'?')+'</td><td>'+(m.city||'?')+'</td><td><span class="badge b-'+(m.active!==false?'active':'rejected')+'">'+(m.active!==false?'Active':'Inactive')+'</span></td><td><button class="btn btn-r" style="font-size:11px;padding:4px 8px" onclick="toast(\'Removed\')">Remove</button></td></tr>'; }).join('');
+}
+async function loadExperiences() {
+  var items=[];
+  if(window._sb){ try { var r=await window._sb.from('experiences').select('*'); if(r.data) items=r.data; } catch(e){} }
+  if(!items.length && typeof EXPERIENCES!=='undefined') items=EXPERIENCES;
+  var tbody=document.getElementById('expBody');
+  if(!items.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:#9CA3AF">No experiences</td></tr>'; return; }
+  tbody.innerHTML=items.map(function(e){ return '<tr><td><b>'+(e.title||'?')+'</b><br><span style="font-size:11px;color:#9CA3AF">'+(e.title_en||e.titleEn||'')+'</span></td><td>'+(e.city||'?')+'</td><td>'+(e.hours||e.duration_hours||'?')+'h</td><td>'+(e.price||e.price_per_person||'?')+' SAR</td><td><span class="badge b-'+(e.active!==false?'active':'rejected')+'">'+(e.active!==false?'Active':'Inactive')+'</span></td><td><button class="btn btn-r" style="font-size:11px;padding:4px 8px" onclick="toast(\'Removed\')">Remove</button></td></tr>'; }).join('');
+}
+
+// SETTINGS
+function saveSettings() {
+  var pass=document.getElementById('newPass').value;
+  if(pass&&pass.length>=6){ localStorage.setItem(PASS_KEY,pass); document.getElementById('newPass').value=''; }
+  var comm=document.getElementById('commPct').value;
+  if(comm) localStorage.setItem('lancul_commission_pct',comm);
+  toast('Settings saved');
+}
+
+// TOAST
+function toast(msg,type) {
+  var wrap=document.getElementById('tw');
+  var el=document.createElement('div');
+  el.className='toast'+(type==='err'?' err':'');
+  el.textContent=msg;
+  wrap.appendChild(el);
+  setTimeout(function(){ el.remove(); },3000);
+}
+
+// BOOT
+document.addEventListener('DOMContentLoaded',function(){
+  if(sessionStorage.getItem('admin_ok')){
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('dashWrap').style.display='flex';
+    initDash();
+  }
+  window.addEventListener('sb_ready',function(){ if(sessionStorage.getItem('admin_ok')) loadOverview(); });
+});
+</script>
+</body>
+</html>
