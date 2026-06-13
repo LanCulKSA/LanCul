@@ -172,8 +172,7 @@ function toast(msg, type) {
 
 // ── CLOSE MODAL ─────────────────────────────────────
 function closeModal() {
-  var o = document.querySelector('.overlay');
-  if (o) o.remove();
+  document.querySelectorAll('.overlay').forEach(function(o){ o.remove(); });
 }
 
 // ── AUTH MODAL ──────────────────────────────────────
@@ -190,63 +189,127 @@ function selRole(role) {
 function openAuth(mode) {
   mode = mode || 'login';
   closeModal();
-
-  var isLogin  = mode === 'login';
-  var title    = isLogin ? (t('nav_login') || 'Login') : (t('nav_signup') || 'Sign Up');
-  var btnLabel = isLogin ? (t('btn_login') || 'Login') : (t('btn_create_acc') || 'Create Account');
+  var isLogin = mode === 'login';
 
   var o = document.createElement('div');
   o.className = 'overlay';
 
-  var signupExtra = '';
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.maxWidth = '440px';
+
+  // Header
+  var head = document.createElement('div');
+  head.className = 'mhead';
+  var h2 = document.createElement('h2');
+  h2.textContent = isLogin ? (t('nav_login') || 'Login') : (t('nav_signup') || 'Sign Up');
+  var closeBtn = document.createElement('button');
+  closeBtn.className = 'close-btn';
+  closeBtn.textContent = '\u00d7';
+  closeBtn.onclick = closeModal;
+  head.appendChild(h2);
+  head.appendChild(closeBtn);
+  modal.appendChild(head);
+
+  // Role selector (signup only)
   if (!isLogin) {
-    signupExtra = '<div style="margin-bottom:14px">'
-      + '<div style="font-size:12px;font-weight:700;color:#7B82A0;text-transform:uppercase;margin-bottom:8px">' + (t('account_type') || 'Account Type') + '</div>'
-      + '<div style="display:flex;gap:10px">'
-      + '<label class="cbchip on" id="roleClient" onclick="selRole(\'client\')" style="flex:1;display:flex;align-items:center;gap:7px;padding:10px 14px;border:1.5px solid #E8506A;border-radius:10px;background:rgba(232,80,106,.06);cursor:pointer;font-size:13px;color:#E8506A">🌍 ' + (t('role_client') || 'Client') + '</label>'
-      + '<label class="cbchip" id="roleProvider" onclick="selRole(\'provider\')" style="flex:1;display:flex;align-items:center;gap:7px;padding:10px 14px;border:1.5px solid #EEF0F7;border-radius:10px;cursor:pointer;font-size:13px;color:#3D4466">🎯 ' + (t('provider_label') || 'Provider') + '</label>'
-      + '</div></div>';
+    var roleWrap = document.createElement('div');
+    roleWrap.style.cssText = 'margin-bottom:14px';
+    var roleLabel = document.createElement('div');
+    roleLabel.style.cssText = 'font-size:12px;font-weight:700;color:#7B82A0;margin-bottom:8px';
+    roleLabel.textContent = t('account_type') || 'Account Type';
+    var roleBtns = document.createElement('div');
+    roleBtns.style.cssText = 'display:flex;gap:10px';
+
+    var cBtn = document.createElement('button');
+    cBtn.id = 'roleClient';
+    cBtn.type = 'button';
+    cBtn.style.cssText = 'flex:1;padding:10px;border:1.5px solid #E8506A;border-radius:10px;background:rgba(232,80,106,.06);color:#E8506A;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700';
+    cBtn.textContent = '\ud83c\udf0d ' + (t('role_client') || 'Client');
+    cBtn.onclick = function(){ selRole('client'); };
+
+    var pBtn = document.createElement('button');
+    pBtn.id = 'roleProvider';
+    pBtn.type = 'button';
+    pBtn.style.cssText = 'flex:1;padding:10px;border:1.5px solid #EEF0F7;border-radius:10px;background:white;color:#3D4466;cursor:pointer;font-family:inherit;font-size:13px';
+    pBtn.textContent = '\ud83c\udfaf ' + (t('provider_label') || 'Provider');
+    pBtn.onclick = function(){ selRole('provider'); };
+
+    roleBtns.appendChild(cBtn);
+    roleBtns.appendChild(pBtn);
+    roleWrap.appendChild(roleLabel);
+    roleWrap.appendChild(roleBtns);
+    modal.appendChild(roleWrap);
   }
 
-  var nameField = isLogin ? '' : '<div style="margin-bottom:14px">'
-    + '<label style="font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px">' + (t('lbl_full_name') || 'Full Name') + '</label>'
-    + '<input id="authName" type="text" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none" placeholder="' + (t('lbl_full_name') || 'Your Name') + '">'
-    + '</div>';
+  // Name field (signup only)
+  if (!isLogin) {
+    modal.appendChild(makeField('authName', t('lbl_full_name') || 'Full Name', 'text', t('lbl_full_name') || 'Your Name'));
+  }
 
-  o.innerHTML = '<div class="modal" style="max-width:480px">'
-    + '<div class="mhead"><h2>' + title + '</h2><button class="close-btn" onclick="closeModal()">×</button></div>'
-    + signupExtra
-    + nameField
-    + '<div style="margin-bottom:14px">'
-    + '<label style="font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px">' + (t('lbl_email') || 'Email') + '</label>'
-    + '<input id="authEmail" type="email" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none;direction:ltr" placeholder="you@email.com">'
-    + '</div>'
-    + '<div style="margin-bottom:18px">'
-    + '<label style="font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px">' + (t('lbl_password') || 'Password') + '</label>'
-    + '<input id="authPass" type="password" style="width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none" onkeydown="if(event.key===\'Enter\')doAuth(\'' + mode + '\')">'
-    + '</div>'
-    + '<button onclick="doAuth(\'' + mode + '\')" style="width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:10px;padding:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer">' + btnLabel + '</button>'
-    + '<div style="text-align:center;margin-top:12px;font-size:12px;color:#7B82A0">'
-    + (isLogin
-        ? '<button onclick="openAuth(\'signup\')" style="background:none;border:none;color:#E8506A;cursor:pointer;font-family:inherit;font-size:12px">' + (t('nav_signup') || 'Sign Up') + '</button>'
-        : '<button onclick="openAuth(\'login\')" style="background:none;border:none;color:#E8506A;cursor:pointer;font-family:inherit;font-size:12px">' + (t('nav_login') || 'Login') + '</button>')
-    + '</div>'
-    + '</div>';
+  // Email + Password
+  modal.appendChild(makeField('authEmail', t('lbl_email') || 'Email', 'email', 'you@email.com'));
+  modal.appendChild(makeField('authPass', t('lbl_password') || 'Password', 'password', '********'));
 
+  // Submit button
+  var submitBtn = document.createElement('button');
+  submitBtn.style.cssText = 'width:100%;background:linear-gradient(135deg,#E8506A,#F5863E);color:white;border:none;border-radius:10px;padding:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px';
+  submitBtn.textContent = isLogin ? (t('btn_login') || 'Login') : (t('btn_create_acc') || 'Create Account');
+  submitBtn.onclick = function(){ doAuth(mode); };
+  modal.appendChild(submitBtn);
+
+  // Switch link
+  var switchWrap = document.createElement('div');
+  switchWrap.style.cssText = 'text-align:center;margin-top:12px;font-size:12px;color:#7B82A0';
+  var switchBtn = document.createElement('button');
+  switchBtn.type = 'button';
+  switchBtn.style.cssText = 'background:none;border:none;color:#E8506A;cursor:pointer;font-family:inherit;font-size:12px';
+  switchBtn.textContent = isLogin ? (t('nav_signup') || 'Create an account') : (t('nav_login') || 'Already have an account?');
+  switchBtn.onclick = function(){ openAuth(isLogin ? 'signup' : 'login'); };
+  switchWrap.appendChild(switchBtn);
+  modal.appendChild(switchWrap);
+
+  o.appendChild(modal);
   document.body.appendChild(o);
   o.addEventListener('click', function(e){ if (e.target === o) closeModal(); });
 
-  // Focus first input
+  // Enter key support
+  var passInput = document.getElementById('authPass');
+  if (passInput) {
+    passInput.addEventListener('keydown', function(e){ if (e.key === 'Enter') doAuth(mode); });
+  }
+
   setTimeout(function(){
-    var f = o.querySelector('input');
-    if (f) f.focus();
+    var first = modal.querySelector('input');
+    if (first) first.focus();
   }, 100);
+}
+
+function makeField(id, label, type, placeholder) {
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'margin-bottom:14px';
+  var lbl = document.createElement('label');
+  lbl.style.cssText = 'font-size:12px;font-weight:700;color:#3D4466;display:block;margin-bottom:5px';
+  lbl.textContent = label;
+  var inp = document.createElement('input');
+  inp.id = id;
+  inp.type = type;
+  inp.placeholder = placeholder || '';
+  inp.style.cssText = 'width:100%;border:1.5px solid #EEF0F7;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none';
+  if (type === 'email') inp.style.direction = 'ltr';
+  wrap.appendChild(lbl);
+  wrap.appendChild(inp);
+  return wrap;
 }
 
 // ── SIGN UP / LOGIN ─────────────────────────────────
 async function doAuth(mode) {
-  var email = document.getElementById('authEmail') ? document.getElementById('authEmail').value.trim() : '';
-  var pass  = document.getElementById('authPass')  ? document.getElementById('authPass').value : '';
+  var ovs = document.querySelectorAll('.overlay');
+  var scope = ovs.length ? ovs[ovs.length-1] : document;
+  var emailEl = scope.querySelector('#authEmail') || document.getElementById('authEmail');
+  var passEl  = scope.querySelector('#authPass')  || document.getElementById('authPass');
+  var email = emailEl ? emailEl.value.trim() : '';
+  var pass  = passEl ? passEl.value : '';
   if (!email || !pass) { toast(t('err_fill_all') || 'Please fill all fields', 'err'); return; }
 
   var btn = document.querySelector('.overlay button[onclick^="doAuth"]');
